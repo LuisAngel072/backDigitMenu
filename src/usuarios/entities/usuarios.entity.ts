@@ -5,7 +5,7 @@ import { NSS } from "src/datos-us/nss/entities/nss.entity";
 import { RFC } from "src/datos-us/rfc/entities/rfc.entity";
 import { UsuariosHasRoles } from "src/datos-us/roles/entities/usuarios_has_roles.entity";
 import { Telefonos } from "src/datos-us/telefono/entities/telefono.entity";
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, OneToOne } from "typeorm";
 
 export enum SexoEnum {
     Masculino = 'Masculino',
@@ -47,17 +47,20 @@ export class Usuarios {
     @JoinColumn({name:'email_id'})
     email_id: Email;
 
-    @ManyToOne(() => Img_us, (img_us) => img_us.usuario)
-    @JoinColumn({name:'img_perfil'})
+    @OneToOne(() => Img_us, { nullable: true })
+    @JoinColumn({ name: 'img_perfil' })
     img_perfil: Img_us;
 
     @ManyToOne(() => NSS, (nss) => nss.usuario)
+    @JoinColumn({ name: 'nss' })
     nss: NSS;
 
     @ManyToOne(() => RFC, (rfc) => rfc.usuario)
+    @JoinColumn({ name: 'rfc' })
     rfc: RFC;
 
     @ManyToOne(() => Domicilios, (domicilio) => domicilio.usuario)
+    @JoinColumn({ name: 'domicilio' })
     domicilio: Domicilios;
 
     @OneToMany(() => UsuariosHasRoles, (usuariosHasRoles) => usuariosHasRoles.usuario)

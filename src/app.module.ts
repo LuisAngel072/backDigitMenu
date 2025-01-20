@@ -1,23 +1,22 @@
-import { UsuariosModule } from './usuarios/usuarios.module';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { UsuariosModule } from './usuarios/usuarios.module';
 import { DomicilioModule } from './datos-us/domicilio/domicilio.module';
 import { TelefonoModule } from './datos-us/telefono/telefono.module';
 import { RfcModule } from './datos-us/rfc/rfc.module';
 import { NssModule } from './datos-us/nss/nss.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailModule } from './datos-us/email/email.module';
 import { ImgUsModule } from './datos-us/img-us/img-us.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    UsuariosModule,
-    DomicilioModule,
-    TelefonoModule,
-    RfcModule,
-    NssModule,
+    ConfigModule.forRoot({
+      isGlobal: true, // Esto permite que las variables estén disponibles globalmente
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
@@ -28,6 +27,11 @@ import { AuthModule } from './auth/auth.module';
       synchronize: false,
       autoLoadEntities: true,
     }),
+    UsuariosModule,
+    DomicilioModule,
+    TelefonoModule,
+    RfcModule,
+    NssModule,
     EmailModule,
     ImgUsModule,
     AuthModule,

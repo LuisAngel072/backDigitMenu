@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { NSS } from './entities/nss.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateNSSDTO } from './dtos/cr-nss.dto';
 
 @Injectable()
 export class NssService {
@@ -16,5 +17,18 @@ export class NssService {
         if (nss) {
             return nss;
         } return null;
+    }
+
+    async crNss(nssDTO: CreateNSSDTO) {
+        try {
+            const nssF = this.getNss(nssDTO.nss);
+            if((await nssF).nss === nssDTO.nss) return nssF;
+            const nssN = this.nssRepository.create(nssDTO);
+            await this.nssRepository.save(nssN);
+            return nssN;
+        } catch (error) {
+            console.error('Error al guardar el NSS:', error);
+            throw new HttpException('Ocurrió un error al obtener el registro del NSS', HttpStatus.BAD_REQUEST);
+        }
     }
 }

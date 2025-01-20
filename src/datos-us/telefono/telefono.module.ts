@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TelefonosService } from './telefonos/telefonos.service';
-import { Service } from './.service';
 import { TelefonoService } from './telefono.service';
+import { Telefonos } from './entities/telefono.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  providers: [TelefonosService, Service, TelefonoService]
+  imports:[TypeOrmModule.forFeature([Telefonos])],
+  providers: [TelefonoService]
 })
 export class TelefonoModule {}

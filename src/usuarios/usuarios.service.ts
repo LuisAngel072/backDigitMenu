@@ -15,6 +15,9 @@ import { DomicilioService } from 'src/datos-us/domicilio/domicilio.service';
 import { Domicilios } from 'src/datos-us/domicilio/entities/domicilio.entity';
 import { Img_us } from 'src/datos-us/img-us/entities/img_us.entity';
 import { ImgUsService } from 'src/datos-us/img-us/img-us.service';
+import { RolesService } from 'src/datos-us/roles/roles.service';
+import * as bcrypt from 'bcrypt';
+import { SHA256 } from 'crypto-js';
 
 @Injectable()
 export class UsuariosService {
@@ -39,6 +42,7 @@ export class UsuariosService {
         private readonly rfcService: RfcService,
         private readonly domService: DomicilioService,
         private readonly imgService: ImgUsService,
+        private readonly rolesService: RolesService,
     ) {}
 
     async encontrarUnUsuario(codigo: string) {
@@ -63,10 +67,79 @@ export class UsuariosService {
 
     async CrearUsuario(usDto: CrearUsuarioDto) {
         try {
-            const usF = this.encontrarUnUsuario(usDto.codigo);
-            if (usF) { throw new HttpException('El usuario con ese código ya existe, imposible registrar', HttpStatus.BAD_REQUEST) }
-                    } catch (error) {
-            
+          // Verificar si el usuario ya existe por su código
+          const usF = await this.encontrarUnUsuario(usDto.codigo); // Asegúrate de que esta función sea `async`
+          if (usF) {
+            throw new HttpException(
+              'El usuario con ese código ya existe, imposible registrar',
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+      
+          // Crear o asociar entidades relacionadas
+          const domicilio = await this.domService.crDom(usDto.domicilio);
+          const email = await this.emService.crEmail(usDto.email_id);
+          const telefono = await this.telService.crTel(usDto.telefono);
+      
+          let rfc = null;
+          if (usDto.rfc) {
+            rfc = await this.rfcService.crRFC(usDto.rfc);
+          }
+      
+          let nss = null;
+          if (usDto.nss) {
+            nss = await this.nssService.crNss(usDto.nss);
+          }
+      
+          // Busca o crea la imagen de perfil (Img_us)
+          let imgPerfil: Img_us | null = null;
+
+          if (usDto.img_perfil) {
+            imgPerfil = await this.imgRepository.findOne({ where: { id_img: usDto.img_perfil.id_img } });  
+            if (!imgPerfil) {
+              throw new HttpException('Imagen de perfil no encontrada', HttpStatus.NOT_FOUND);
+            }
+          }
+          console.log(email);
+          console.log(telefono);
+          console.log(domicilio);
+          console.log(rfc);
+          console.log(nss);
+          console.log(imgPerfil);
+          // Crear instancia del usuario con las relaciones necesarias
+          const usuario = this.usuariosRepository.create({
+              codigo: usDto.codigo,
+              nombres: usDto.nombres,
+              primer_apellido: usDto.primer_apellido,
+              segundo_apellido: usDto.segundo_apellido || null,
+              sexo: usDto.sexo,
+              contrasena: bcrypt.hashSync(SHA256(usDto.codigo).toString(), 10),
+              img_perfil: imgPerfil, // Relación con la entidad Img_us
+              telefono_id: telefono,
+              email_id: email,
+              domicilio: domicilio,
+              rfc: rfc || null,
+              nss: nss || null,
+          });
+          
+          // Guardar el usuario en la base de datos
+          const nuevoUsuario = await this.usuariosRepository.save(usuario);
+      
+          // Manejar roles (si están definidos)
+          if (usDto.rol && usDto.rol.length > 0) {
+            for (const rol of usDto.rol) {
+              await this.rolesService.asignarRolAUsuario(usuario.id_usuario, rol.rol);
+            }
+          }
+      
+          return nuevoUsuario;
+        } catch (error) {
+          console.error('Error al crear el usuario:', error);
+          throw new HttpException(
+            error.message || 'No se pudo crear el usuario',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
         }
-    }
+      }
+      
 }

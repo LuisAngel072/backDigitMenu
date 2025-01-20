@@ -6,6 +6,7 @@ import { Domicilios } from 'src/datos-us/domicilio/entities/domicilio.entity';
 import { Roles } from 'src/datos-us/roles/entities/roles.entity';
 import { NSS } from 'src/datos-us/nss/entities/nss.entity';
 import { RFC } from 'src/datos-us/rfc/entities/rfc.entity';
+import { Img_us } from 'src/datos-us/img-us/entities/img_us.entity';
 
 export class CrearUsuarioDto {
 
@@ -23,23 +24,20 @@ export class CrearUsuarioDto {
     segundo_apellido: string;
 
     @IsNotEmpty()
-    telefono: string;
+    telefono: Telefonos;
 
     @IsNotEmpty()
-    email: Email;
+    email_id: Email;
 
     @IsEnum(SexoEnum)
     sexo:string;
 
-    @IsString()
     @IsOptional()
-    @MaxLength(13,{message: 'Se superó el limite de 13 caracteres en rfc'})
-    rfc:string;
+    rfc:RFC;
 
-    @IsString()
+    
     @IsOptional()
-    @MaxLength(11,{message: 'Se superó el limite de 11 caracteres en nss'})
-    nss:string;
+    nss:NSS;
 
     @IsNotEmpty()
     domicilio: Domicilios;
@@ -50,7 +48,7 @@ export class CrearUsuarioDto {
 
     @IsOptional()
     @IsString()
-    img_perfil: string;
+    img_perfil: Img_us;
 
     @IsArray()
     rol: Roles[];
