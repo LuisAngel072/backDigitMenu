@@ -27,7 +27,7 @@ export class ImgUsService {
      */
     async crImg(imgDto: CreateImgUsDTO) {
         try {
-            const imgF = this.getImg(imgDto.img_ruta);
+            const imgF = await this.getImg(imgDto.img_ruta);
             if(imgF) return imgF   
             const imgN = this.imgRepository.create(imgDto);
             await this.imgRepository.save(imgN);

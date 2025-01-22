@@ -21,8 +21,8 @@ export class NssService {
 
     async crNss(nssDTO: CreateNSSDTO) {
         try {
-            const nssF = this.getNss(nssDTO.nss);
-            if((await nssF).nss === nssDTO.nss) return nssF;
+            const nssF = await this.getNss(nssDTO.nss);
+            if(await nssF) return nssF;
             const nssN = this.nssRepository.create(nssDTO);
             await this.nssRepository.save(nssN);
             return nssN;

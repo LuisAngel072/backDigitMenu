@@ -4,8 +4,8 @@ import { Roles } from "./roles.entity";
 
 @Entity({ name: 'usuarios_has_roles' })
 export class UsuariosHasRoles {
-    @PrimaryGeneratedColumn('increment', { name: 'id' }) // Llave primaria automática
-    id: number;
+    @PrimaryGeneratedColumn('increment', { name: 'id_us_rol' }) // Llave primaria automática
+    id_us_rol: number;
 
     @ManyToOne(() => Usuarios, (usuario) => usuario.usuariosHasRoles, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
     @JoinColumn({ name: 'usuario_id' })

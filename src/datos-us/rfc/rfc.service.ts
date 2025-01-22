@@ -20,8 +20,8 @@ export class RfcService {
 
     async crRFC(rfcDTO: CreateRFCDTO) {
         try {
-            const rfcF = this.getRfc(rfcDTO.rfc)
-            if((await rfcF).rfc == rfcDTO.rfc) return rfcF;
+            const rfcF = await this.getRfc(rfcDTO.rfc)
+            if(rfcF) return rfcF;
             const rfcN = this.rfcRepository.create(rfcDTO);
             await this.rfcRepository.save(rfcN);
             return rfcN;

@@ -26,7 +26,7 @@ export class TelefonoService {
 
     async crTel(telDTO: CreateTelefonosDTO) {
         try {
-            const telF = this.getTel(telDTO.telefono);
+            const telF = await this.getTel(telDTO.telefono);
             if(telF) return telF;
             const telG = this.telRepository.create(telDTO);
             await this.telRepository.save(telG);

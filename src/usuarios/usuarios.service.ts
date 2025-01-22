@@ -47,7 +47,7 @@ export class UsuariosService {
 
     async encontrarUnUsuario(codigo: string) {
         try {
-            const usuario = this.usuariosRepository.findOne({where:{codigo: codigo}})
+            const usuario = this.usuariosRepository.findOne({where:{codigo: codigo},})
             if(!usuario){throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);    }
             return usuario;    
         } catch (error) {
@@ -79,7 +79,7 @@ export class UsuariosService {
           // Crear o asociar entidades relacionadas
           const domicilio = await this.domService.crDom(usDto.domicilio);
           const email = await this.emService.crEmail(usDto.email_id);
-          const telefono = await this.telService.crTel(usDto.telefono);
+          const telefono = await this.telService.crTel(usDto.telefono_id);
       
           let rfc = null;
           if (usDto.rfc) {
@@ -95,17 +95,11 @@ export class UsuariosService {
           let imgPerfil: Img_us | null = null;
 
           if (usDto.img_perfil) {
-            imgPerfil = await this.imgRepository.findOne({ where: { id_img: usDto.img_perfil.id_img } });  
-            if (!imgPerfil) {
-              throw new HttpException('Imagen de perfil no encontrada', HttpStatus.NOT_FOUND);
-            }
+            imgPerfil = await this.imgService.crImg(usDto.img_perfil)
           }
-          console.log(email);
-          console.log(telefono);
-          console.log(domicilio);
-          console.log(rfc);
-          console.log(nss);
-          console.log(imgPerfil);
+         console.log(usDto.contrasena) 
+         const hashedPassword = await bcrypt.hash(usDto.contrasena, 10);
+
           // Crear instancia del usuario con las relaciones necesarias
           const usuario = this.usuariosRepository.create({
               codigo: usDto.codigo,
@@ -113,8 +107,8 @@ export class UsuariosService {
               primer_apellido: usDto.primer_apellido,
               segundo_apellido: usDto.segundo_apellido || null,
               sexo: usDto.sexo,
-              contrasena: bcrypt.hashSync(SHA256(usDto.codigo).toString(), 10),
-              img_perfil: imgPerfil, // Relación con la entidad Img_us
+              contrasena: hashedPassword,
+              img_perfil: imgPerfil || null, // Relación con la entidad Img_us
               telefono_id: telefono,
               email_id: email,
               domicilio: domicilio,

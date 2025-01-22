@@ -34,9 +34,9 @@ export class EmailService {
             console.log('******************')
             console.log(emDto)
             console.log('******************')
-            const emF = this.getEmail(emDto.email);
+            const emF = await this.getEmail(emDto.email);
             
-            if((await emF).email === emDto.email) {
+            if(emF) {
                 console.log('******************')
                 console.log(emF)
                 console.log('******************')

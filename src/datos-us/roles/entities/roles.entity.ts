@@ -4,7 +4,7 @@ import { UsuariosHasRoles } from "./usuarios_has_roles.entity";
 @Entity({name: 'roles'})
 export class Roles {
     @PrimaryGeneratedColumn('increment', {type:'int', name:'id_rol'})
-    id_nss: number;
+    id_rol: number;
 
     @Column({name: 'rol', type:'varchar', length: 20, unique:true})
     rol: string;

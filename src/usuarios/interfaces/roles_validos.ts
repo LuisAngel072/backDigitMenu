@@ -1,4 +1,4 @@
-enum Roles {
+enum Roles_validos {
     admin = 'Administrador',
     cocinero = 'Cocinero',
     mesero = 'Mesero',

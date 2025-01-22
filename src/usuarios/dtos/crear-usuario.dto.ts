@@ -24,7 +24,7 @@ export class CrearUsuarioDto {
     segundo_apellido: string;
 
     @IsNotEmpty()
-    telefono: Telefonos;
+    telefono_id: Telefonos;
 
     @IsNotEmpty()
     email_id: Email;
@@ -50,7 +50,7 @@ export class CrearUsuarioDto {
     @IsString()
     img_perfil: Img_us;
 
-    @IsArray()
+    @IsNotEmpty()
     rol: Roles[];
 
 }
