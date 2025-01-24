@@ -29,8 +29,8 @@ export class RolesService {
       
           // Crear instancia de UsuariosHasRoles
           const usHrol = this.usHrolRepository.create({
-            usuario, // Relación con el usuario
-            rol: rolF, // Relación con el rol
+            usuario_id: usuario, // Relación con el usuario
+            rol_id: rolF, // Relación con el rol
           });
       
           // Guardar en la base de datos
@@ -45,5 +45,24 @@ export class RolesService {
           );
         }
       }
+    
+    async getRolesByUsuario(usuario: Usuarios) {
+      try {
+        const roles = await this.usHrolRepository.find(
+          {
+            where:{usuario_id:usuario},
+            relations: ['rol_id'],
+          });
+  
+        return roles.map((userRole) => userRole.rol_id);
+      }catch(error) {
+        console.error('Error al encontrar el rol del usuario:', error);
+          throw new HttpException(
+            error.message || 'Error interno al asignar el rol',
+            HttpStatus.NOT_FOUND,
+          );
+      }
+      
+    }
       
 }

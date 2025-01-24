@@ -5,10 +5,13 @@ import { UsuariosModule } from 'src/usuarios/usuarios.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { RolesModule } from 'src/datos-us/roles/roles.module';
 
 @Module({
   imports: [
     forwardRef(() => UsuariosModule),
+    forwardRef(() => RolesModule),
     PassportModule.register({
       defaultStrategy: 'jwt'
     }),
@@ -17,11 +20,11 @@ import { PassportModule } from '@nestjs/passport';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: process.env.JWT_SECRET,
-        signOptions: { expiresIn: '1h' },
+        signOptions: { expiresIn: '4h' },
       }),
     }),
   ],
-  providers: [AuthService],
+  providers: [AuthService,JwtStrategy],
   controllers: [AuthController],
   exports: [AuthService, PassportModule],
 })

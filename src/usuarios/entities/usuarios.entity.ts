@@ -63,7 +63,7 @@ export class Usuarios {
     @JoinColumn({ name: 'domicilio' })
     domicilio: Domicilios;
 
-    @OneToMany(() => UsuariosHasRoles, (usuariosHasRoles) => usuariosHasRoles.usuario)
+    @OneToMany(() => UsuariosHasRoles, (usuariosHasRoles) => usuariosHasRoles.usuario_id)
     usuariosHasRoles: UsuariosHasRoles[];
 
 }

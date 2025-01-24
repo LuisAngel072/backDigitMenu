@@ -12,6 +12,6 @@ export class Roles {
     @Column({name: 'descripcion', type:'tinytext'})
     descripcion: string;
 
-    @OneToMany(() => UsuariosHasRoles, (usuariosHasRoles) => usuariosHasRoles.rol)
+    @OneToMany(() => UsuariosHasRoles, (usuariosHasRoles) => usuariosHasRoles.rol_id)
     usuariosHasRoles: UsuariosHasRoles[];
 }

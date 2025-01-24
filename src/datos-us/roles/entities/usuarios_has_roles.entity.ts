@@ -9,9 +9,9 @@ export class UsuariosHasRoles {
 
     @ManyToOne(() => Usuarios, (usuario) => usuario.usuariosHasRoles, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
     @JoinColumn({ name: 'usuario_id' })
-    usuario: Usuarios;
+    usuario_id: Usuarios;
 
     @ManyToOne(() => Roles, (rol) => rol.usuariosHasRoles, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
     @JoinColumn({ name: 'rol_id' })
-    rol: Roles;
+    rol_id: Roles;
 }

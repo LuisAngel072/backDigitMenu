@@ -3,10 +3,12 @@ import { UsuariosService } from 'src/usuarios/usuarios.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Usuarios } from 'src/usuarios/entities/usuarios.entity';
+import { RolesService } from 'src/datos-us/roles/roles.service';
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usuariosService: UsuariosService,
+        private readonly rolesService: RolesService,
         private readonly jwtService: JwtService,
       ) {}
 
@@ -14,8 +16,16 @@ export class AuthService {
         const usuario = await this.usuariosService.encontrarUnUsuario(codigo);
       
         if (usuario) {
+
           const contrasenaValida = await bcrypt.compare(contrasena, usuario.contrasena); // Usa solo compare
           console.log('Contraseña válida:', contrasenaValida); // Asegúrate de que este log funcione
+
+          // Recuperar el rol asociado al usuario desde la relación
+          const roles = await this.rolesService.getRolesByUsuario(usuario);
+          if (!roles || roles.length === 0) {
+            throw new UnauthorizedException('No se encontraron roles asociados al usuario');
+          }
+
           if (contrasenaValida) {
             const { contrasena, ...result } = usuario; // Excluye la contraseña del objeto de retorno
             return result;
@@ -28,7 +38,9 @@ export class AuthService {
       
 
     async iniciarSesion(usuario: any) {
-        const payload = { sub: usuario.id_usuario, rol: usuario.rol };
+      const roles = await this.rolesService.getRolesByUsuario(usuario);
+      const rol = roles[0].rol;
+        const payload = { sub: usuario.id_usuario, rol: rol };
         return {
           access_token: this.jwtService.sign(payload),
         };
