@@ -42,6 +42,10 @@ export class AuthService {
       const rol = roles[0].rol;
         const payload = { sub: usuario.id_usuario, rol: rol };
         return {
+          id_usuario: usuario.id_usuario,
+          nombres: usuario.nombres,
+          codigo: usuario.codigo,
+          primer_apellido: usuario.primer_apellido,
           access_token: this.jwtService.sign(payload),
         };
       }
