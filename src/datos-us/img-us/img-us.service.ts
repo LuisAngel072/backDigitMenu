@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Img_us } from './entities/img_us.entity';
 import { Repository } from 'typeorm';
 import { CreateImgUsDTO } from './dto/cr-imgus.dto';
+import { UpEmailDto } from '../email/dto/up-email.dto';
+import { UpImgUsDTO } from './dto/up-imgus.dto';
 
 @Injectable()
 export class ImgUsService {
@@ -38,5 +40,21 @@ export class ImgUsService {
             console.error('Error al guardar la imagen del usuario:', error);
             throw new HttpException('Ocurrió un error al obtener el registro de la imagen', HttpStatus.BAD_REQUEST);
         }
-    }
+    } 
+
+    async upImg(id_img: number, upImgDto: UpImgUsDTO) {
+        try {
+            const imgF = await this.getImg(upImgDto.img_ruta);
+            if(!imgF) {
+                throw new HttpException('ImgUs no encontrado', HttpStatus.NOT_FOUND);
+            }
+            if(imgF) {
+                const img = await this.imgRepository.update(id_img, upImgDto);
+                return img
+            }
+        }catch(error) {
+            console.error('Error al guardar el img del usuario:', error);
+            throw new HttpException('Ocurrió un error al obtener el registro del img', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }   
 }

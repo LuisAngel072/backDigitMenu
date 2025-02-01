@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Email } from './entities/email.entity';
 import { Repository } from 'typeorm';
 import { CreateEmailDto } from './dto/cr-email.dto';
+import { UpEmailDto } from './dto/up-email.dto';
 
 @Injectable()
 export class EmailService {
@@ -50,5 +51,21 @@ export class EmailService {
             console.error('Error al guardar el email:', error);
             throw new HttpException('Ocurrió un error al obtener el registro del email', HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    async upEmail(id_email: number, upEmailDto: UpEmailDto) {
+        try {
+            const emailF = this.emailRepository.findOne({where:{id_email:id_email}});
+            if (!emailF)
+                throw new HttpException('Email no encontrado', HttpStatus.NOT_FOUND);
+            if (emailF) {
+              const email = await this.emailRepository.update(id_email, upEmailDto);
+              return email;
+            }    
+        } catch (error) {
+            console.error('Error al guardar el email:', error);
+            throw new HttpException('Ocurrió un error al obtener el registro del email', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
     }
 }

@@ -29,7 +29,7 @@ export class AuthService {
           if (contrasenaValida) {
             const { contrasena, ...result } = usuario; // Excluye la contraseña del objeto de retorno
             return result;
-          }
+          } 
         }
       
         // Si no se cumple ninguna de las condiciones, lanza la excepción
@@ -40,13 +40,15 @@ export class AuthService {
     async iniciarSesion(usuario: any) {
       const roles = await this.rolesService.getRolesByUsuario(usuario);
       const rol = roles[0].rol;
-        const payload = { sub: usuario.id_usuario, rol: rol };
-        return {
-          id_usuario: usuario.id_usuario,
-          nombres: usuario.nombres,
-          codigo: usuario.codigo,
-          primer_apellido: usuario.primer_apellido,
-          access_token: this.jwtService.sign(payload),
-        };
+      const payload = {
+        sub: usuario.id_usuario,
+        rol: rol,
+        nombres: usuario.nombres,
+        codigo: usuario.codigo,
+        primer_apellido: usuario.primer_apellido,
+      };
+      return {
+        access_token: this.jwtService.sign(payload),
+      };
       }
 }
