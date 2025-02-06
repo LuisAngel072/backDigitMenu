@@ -17,13 +17,19 @@ export class UsuariosController {
     }
 
     @Auth(Roles_validos.admin)
+    @Get()
+    async encontrarUnUsuarios(@Param('codigo') codigo:string) {
+      return await this.usuariosService.encontrarUnUsuario(codigo);
+    }
+
+    @Auth(Roles_validos.admin)
     @Post('registro')
     async registrarUsuario(@Body() usuario: CrearUsuarioDto) {
       return await this.usuariosService.CrearUsuario(usuario);
     }
 
     @Auth(Roles_validos.admin)
-    @Patch('actualizar')
+    @Patch('actualizar/:id_usuario')
     async actualizarUsuario(@Param('id_usuario', ParseIntPipe) id_usuario: number, @Body() UpUsDto:UpUsuarioDto) {
       return await this.usuariosService.actualizarUsuario(id_usuario, UpUsDto);
     }

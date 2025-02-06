@@ -35,7 +35,6 @@ export class CrearUsuarioDto {
     @IsOptional()
     rfc:RFC;
 
-    
     @IsOptional()
     nss:NSS;
 

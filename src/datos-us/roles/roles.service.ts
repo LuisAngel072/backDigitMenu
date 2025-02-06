@@ -62,28 +62,84 @@ export class RolesService {
     } catch (error) {
       console.error('Error al encontrar el rol del usuario:', error);
       throw new HttpException(
-        error.message || 'Error interno al asignar el rol',
+        error.message || 'Error interno al obtener roles de un usuario',
         HttpStatus.NOT_FOUND,
       );
     }
   }
 
-  async cambiarRol(codigo: string, rol_id: Roles) {
+  async cambiarRol(codigo: string, rol_id: Roles): Promise<UsuariosHasRoles> {
     try {
-      const usF: Usuarios = await this.usuariosRepository.findOne({where:{codigo: codigo}});
-      const usHrolF = this.usHrolRepository.find({
-        where:{usuario_id:usF},
+      // Buscar el usuario por código
+      const usF: Usuarios = await this.usuariosRepository.findOne({
+        where: { codigo: codigo },
+      });
+      if (!usF) {
+        throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+      }
+  
+      // Obtener el registro en la tabla de relación para ese usuario
+      const usHrolF = await this.usHrolRepository.find({
+        where: { usuario_id: usF },
         relations: ['rol_id'],
       });
-      if(!usHrolF) { throw new HttpException('Rol asignado no encontrado', HttpStatus.NOT_FOUND);}
-      if(usHrolF) {
-        usHrolF[0] = rol_id;
-        const usHRol = this.usHrolRepository.update(rol_id.id_rol, usHrolF[0]);
-        return usHRol;
+      if (!usHrolF || usHrolF.length === 0) {
+        throw new HttpException(
+          'Rol asignado no encontrado',
+          HttpStatus.NOT_FOUND,
+        );
       }
+  
+      // Obtener la entidad Roles completa usando el valor recibido
+      const rolEntity = await this.rolesRepository.findOne({
+        where: { rol: rol_id.rol },
+      });
+      if (!rolEntity) {
+        throw new HttpException('Rol no encontrado', HttpStatus.NOT_FOUND);
+      }
+  
+      // Actualizar el registro de la relación con la entidad completa
+      usHrolF[0].rol_id = rolEntity;
+      await this.usHrolRepository.save(usHrolF[0]);
+      return usHrolF[0];
     } catch (error) {
       console.error('Error al actualizar el rol asignado al usuario:', error);
-            throw new HttpException('Ocurrió un error al obtener el registro rol asignado al usuario', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Ocurrió un error al obtener el registro rol asignado al usuario',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+  
+  
+
+  async obtenerUsuariosYRoles() {
+    try {
+      const usFHrol = await this.usHrolRepository.find({
+        relations: [
+          'usuario_id',
+          'rol_id',
+          'usuario_id.domicilio',
+          'usuario_id.nss',
+          'usuario_id.rfc',
+          'usuario_id.email_id',
+          'usuario_id.telefono_id',
+        ],
+      });
+      if (!usFHrol) {
+        throw new HttpException(
+          'No se encontraron usuarios con roles',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      console.log(usFHrol);
+      return usFHrol;
+    } catch (error) {
+      console.error('Error al obtener los usuarios de roles: ', error);
+      throw new HttpException(
+        'Ocurrió un error al obtener los usuarios de roles',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

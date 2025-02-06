@@ -160,96 +160,81 @@ export class UsuariosService {
     }
   }
 
-  /**
-   * Sirve para actualizar los datos que el usuario indique.
-   * @param id Id del usuario a actualizar
-   * @param usDto recopilación de datos a actualizar
-   * @returns 
-   */
   async actualizarUsuario(id: number, usDto: UpUsuarioDto) {
     try {
       // Buscar el usuario a actualizar
-      const usF = await this.usuariosRepository.findOne({
+      console.log("DTO recibido:", usDto);
+      const usuarioExistente = await this.usuariosRepository.findOne({
         where: { id_usuario: id },
       });
-      if (!usF) {
+      if (!usuarioExistente) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
       }
-
-      // Actualizar entidades relacionadas
-      let domUp = null;
+  
+      // Encriptar la contraseña si se proporciona
+      if (usDto.contrasena && usDto.contrasena.trim().length > 0) {
+        usDto.contrasena = await bcrypt.hash(usDto.contrasena, 10);
+      }
+  
+      // Actualizar entidades relacionadas individualmente si se enviaron
       if (usDto.domicilio) {
-        domUp = await this.domService.upDom(
-          usDto.domicilio.id_dom,
-          usDto.domicilio,
-        );
+        console.log("Domicilio recibido:", usDto.domicilio);
+        await this.domService.upDom(usDto.domicilio.id_dom, usDto.domicilio);
       }
-
-      let emailUp = null;
       if (usDto.email_id) {
-        emailUp = await this.emService.upEmail(
-          usDto.email_id.id_email,
-          usDto.email_id,
-        );
+        console.log("Email recibido:", usDto.email_id);
+        await this.emService.upEmail(usDto.email_id.id_email, usDto.email_id);
       }
-
-      let img_us = null;
       if (usDto.img_perfil) {
-        img_us = await this.imgService.upImg(
-          usDto.img_perfil.id_img,
-          usDto.img_perfil,
-        );
+        console.log("IMG recibido", usDto.img_perfil);
+        await this.imgService.upImg(usDto.img_perfil.id_img, usDto.img_perfil);
       }
-
-      let nss = null;
       if (usDto.nss) {
-        nss = await this.nssService.upNss(usDto.nss.id_nss, usDto.nss);
+        console.log("NSS recibido:", usDto.nss);
+        await this.nssService.upNss(usDto.nss.id_nss, usDto.nss);
       }
-
-      let rfc = null;
       if (usDto.rfc) {
-        rfc = await this.rfcService.upRFC(usDto.rfc.id_rfc, usDto.rfc);
+        console.log("RFC recibido:", usDto.rfc);
+        await this.rfcService.upRFC(usDto.rfc.id_rfc, usDto.rfc);
       }
-
-      let tel = null;
       if (usDto.telefono_id) {
-        tel = await this.telService.upTel(
-          usDto.telefono_id.id_telefono,
-          usDto.telefono_id,
-        );
+        console.log("Teléfono recibido:", usDto.telefono_id);
+        await this.telService.upTel(usDto.telefono_id.id_telefono, usDto.telefono_id);
       }
-
       if (usDto.rol && usDto.rol.length > 0) {
+        // Actualizar roles usando el servicio correspondiente
         for (const rol of usDto.rol) {
+          console.log("Rol recibido:", rol);
           await this.rolesService.cambiarRol(usDto.codigo, rol);
+          console.log("DEPURANDO CICLO FOR");
         }
       }
-
-      // Filtrar el DTO para extraer únicamente las propiedades definidas,
-      // omitiendo aquellas relacionadas que ya se actualizaron por otros servicios
-      const fieldsToOmit = [
-        'domicilio',
-        'email_id',
-        'img_perfil',
-        'nss',
-        'rfc',
-        'telefono_id',
-        'rol',
+  
+      // Actualizar el usuario principal
+      const camposPermitidos = [
+        'codigo',
+        'nombres',
+        'primer_apellido',
+        'segundo_apellido',
+        'sexo',
+        'contrasena',
       ];
-      const updateUserData = Object.keys(usDto)
-        .filter(
-          (key) =>
-            usDto[key] !== null &&
-            usDto[key] !== undefined &&
-            !fieldsToOmit.includes(key),
-        )
-        .reduce((acc, key) => ({ ...acc, [key]: usDto[key] }), {});
-
-      // Actualizar el usuario con los campos filtrados
-      await this.usuariosRepository.update(id, updateUserData);
-      return await this.usuariosRepository.findOne({
-        where: { id_usuario: id },
-      });
+  
+      // Copiar solo los campos permitidos del DTO al usuario existente
+      for (const campo of camposPermitidos) {
+        if (usDto[campo] !== undefined && usDto[campo] !== null) {
+          usuarioExistente[campo] = usDto[campo];
+        }
+      }
+  
+      console.log('Datos a actualizar en usuario principal:', usuarioExistente);
+  
+      // Guardar los cambios en la base de datos
+      await this.usuariosRepository.save(usuarioExistente);
+  
+      // Retornar el usuario actualizado
+      return usuarioExistente;
+  
     } catch (error) {
       throw new HttpException(
         error.message || 'Error al intentar actualizar el usuario',
@@ -257,6 +242,8 @@ export class UsuariosService {
       );
     }
   }
+  
+  
 
   /**
    * Esta función sirve para cambiar el estado "activo" de un usuario de 1 a 0

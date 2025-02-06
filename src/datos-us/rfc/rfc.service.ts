@@ -34,7 +34,7 @@ export class RfcService {
 
     async upRFC(id_rfc:number,rfcDTO:UpRFCDTO) {
         try {
-            const rfcF = await this.rfcRepository.findOne({where:{id_rfc:id_rfc}})
+            const rfcF = await this.rfcRepository.findOne({where:{id_rfc: id_rfc}})
             if(!rfcF) throw new HttpException('RFC no encontrado', HttpStatus.NOT_FOUND);;
             if(rfcF) {
                 const rfc = await this.rfcRepository.update(id_rfc, rfcDTO);
