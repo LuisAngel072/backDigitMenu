@@ -37,7 +37,7 @@ export class Usuarios {
     contrasena: string;
 
     @Column({name: 'activo', type:'boolean', default:1})
-    activo: number;
+    activo: boolean;
     
     @ManyToOne(() => Telefonos, (telefono) => telefono.usuario)
     @JoinColumn({name:'telefono_id'})

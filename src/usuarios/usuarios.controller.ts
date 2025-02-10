@@ -34,4 +34,10 @@ export class UsuariosController {
       return await this.usuariosService.actualizarUsuario(id_usuario, UpUsDto);
     }
 
+    @Auth(Roles_validos.admin)
+    @Patch('desactivar/:id_usuario')
+    async desactivarUsuario(@Param('id_usuario', ParseIntPipe) id_usuario: number) {
+      return await this.usuariosService.desactivarUsuario(id_usuario);
+    }
+
 }
