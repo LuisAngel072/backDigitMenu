@@ -262,7 +262,7 @@ export class UsuariosService {
       }
 
       // Actualizamos solo la propiedad "activo"
-      await this.usuariosRepository.update(id_usuario, { activo: 0 });
+      await this.usuariosRepository.update(id_usuario, { activo: false });
       // Si necesitas devolver la entidad actualizada, la buscas nuevamente
       const usuarioActualizado = await this.usuariosRepository.findOne({
         where: { id_usuario },

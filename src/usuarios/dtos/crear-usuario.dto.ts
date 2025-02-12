@@ -11,12 +11,15 @@ import { Img_us } from 'src/datos-us/img-us/entities/img_us.entity';
 export class CrearUsuarioDto {
 
     @IsString()
+    @IsNotEmpty()
     codigo: string;
 
     @IsString()
+    @IsNotEmpty()
     nombres: string;
 
     @IsString()
+    @IsNotEmpty()
     primer_apellido: string;
 
     @IsString()
@@ -30,6 +33,7 @@ export class CrearUsuarioDto {
     email_id: Email;
 
     @IsEnum(SexoEnum)
+    @IsNotEmpty()
     sexo:string;
 
     @IsOptional()
