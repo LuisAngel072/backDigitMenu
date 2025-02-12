@@ -17,6 +17,18 @@ export class RolesService {
     private readonly usuariosRepository: Repository<Usuarios>,
   ) {}
 
+  async getRoles(): Promise<Roles[]> {
+    try {
+      const roles = await this.rolesRepository.find();
+      return roles;
+    } catch (error) {
+      console.error('Error al obtener roles:', error);
+      throw new HttpException(
+        error.message || 'Error interno al obtener roles',
+        HttpStatus.INTERNAL_SERVER_ERROR,)
+    }    
+  }
+
   async asignarRolAUsuario(id_usuario: number, rol: string) {
     try {
       // Buscar usuario y rol en la base de datos
