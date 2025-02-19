@@ -11,6 +11,7 @@ import { NssModule } from './datos-us/nss/nss.module';
 import { EmailModule } from './datos-us/email/email.module';
 import { ImgUsModule } from './datos-us/img-us/img-us.module';
 import { AuthModule } from './auth/auth.module';
+import { IngredientesModule } from './ingredientes/ingredientes.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AuthModule } from './auth/auth.module';
     EmailModule,
     ImgUsModule,
     AuthModule,
+    IngredientesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

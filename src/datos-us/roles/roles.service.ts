@@ -136,6 +136,7 @@ export class RolesService {
           'usuario_id.rfc',
           'usuario_id.email_id',
           'usuario_id.telefono_id',
+          'usuario_id.img_perfil'
         ],
       });
       if (!usFHrol) {

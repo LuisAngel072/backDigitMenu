@@ -1,10 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Img_us } from './entities/img_us.entity';
 import { Repository } from 'typeorm';
 import { CreateImgUsDTO } from './dto/cr-imgus.dto';
-import { UpEmailDto } from '../email/dto/up-email.dto';
 import { UpImgUsDTO } from './dto/up-imgus.dto';
+
 
 @Injectable()
 export class ImgUsService {

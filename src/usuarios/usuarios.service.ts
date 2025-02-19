@@ -62,7 +62,7 @@ export class UsuariosService {
       return usuario;
     } catch (error) {
       throw new HttpException(
-        'Oops, algo salió mal',
+        'Oops, algo salió mal al intentar encontrar usuario',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
