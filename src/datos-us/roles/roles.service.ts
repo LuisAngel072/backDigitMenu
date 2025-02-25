@@ -145,7 +145,6 @@ export class RolesService {
           HttpStatus.NOT_FOUND,
         );
       }
-      console.log(usFHrol);
       return usFHrol;
     } catch (error) {
       console.error('Error al obtener los usuarios de roles: ', error);

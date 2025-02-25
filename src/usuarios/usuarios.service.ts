@@ -88,15 +88,15 @@ export class UsuariosService {
 
   async CrearUsuario(usDto: CrearUsuarioDto) {
     try {
-      // Verificar si el usuario ya existe por su código
-      const usF = await this.encontrarUnUsuario(usDto.codigo); // Asegúrate de que esta función sea `async`
+
+      const usF = await this.encontrarUnUsuario(usDto.codigo);
       if (usF) {
+        console.log(usF);
         throw new HttpException(
           'El usuario con ese código ya existe, imposible registrar',
           HttpStatus.BAD_REQUEST,
         );
       }
-
       // Crear o asociar entidades relacionadas
       const domicilio = await this.domService.crDom(usDto.domicilio);
       const email = await this.emService.crEmail(usDto.email_id);
@@ -118,9 +118,7 @@ export class UsuariosService {
       if (usDto.img_perfil) {
         imgPerfil = await this.imgService.crImg(usDto.img_perfil);
       }
-      console.log(usDto.contrasena);
       const hashedPassword = await bcrypt.hash(usDto.contrasena, 10);
-
       // Crear instancia del usuario con las relaciones necesarias
       const usuario = this.usuariosRepository.create({
         codigo: usDto.codigo,
@@ -143,13 +141,13 @@ export class UsuariosService {
       // Manejar roles (si están definidos)
       if (usDto.rol && usDto.rol.length > 0) {
         for (const rol of usDto.rol) {
+          console.log('Registrando roles: ', rol.rol);
           await this.rolesService.asignarRolAUsuario(
             usuario.id_usuario,
             rol.rol,
           );
         }
       }
-
       return nuevoUsuario;
     } catch (error) {
       console.error('Error al crear el usuario:', error);
@@ -163,53 +161,56 @@ export class UsuariosService {
   async actualizarUsuario(id: number, usDto: UpUsuarioDto) {
     try {
       // Buscar el usuario a actualizar
-      console.log("DTO recibido:", usDto);
+      console.log('DTO recibido:', usDto);
       const usuarioExistente = await this.usuariosRepository.findOne({
         where: { id_usuario: id },
       });
       if (!usuarioExistente) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
       }
-  
+
       // Encriptar la contraseña si se proporciona
       if (usDto.contrasena && usDto.contrasena.trim().length > 0) {
         usDto.contrasena = await bcrypt.hash(usDto.contrasena, 10);
       }
-  
+
       // Actualizar entidades relacionadas individualmente si se enviaron
       if (usDto.domicilio) {
-        console.log("Domicilio recibido:", usDto.domicilio);
+        console.log('Domicilio recibido:', usDto.domicilio);
         await this.domService.upDom(usDto.domicilio.id_dom, usDto.domicilio);
       }
       if (usDto.email_id) {
-        console.log("Email recibido:", usDto.email_id);
+        console.log('Email recibido:', usDto.email_id);
         await this.emService.upEmail(usDto.email_id.id_email, usDto.email_id);
       }
       if (usDto.img_perfil) {
-        console.log("IMG recibido", usDto.img_perfil);
+        console.log('IMG recibido', usDto.img_perfil);
         await this.imgService.upImg(usDto.img_perfil.id_img, usDto.img_perfil);
       }
       if (usDto.nss) {
-        console.log("NSS recibido:", usDto.nss);
+        console.log('NSS recibido:', usDto.nss);
         await this.nssService.upNss(usDto.nss.id_nss, usDto.nss);
       }
       if (usDto.rfc) {
-        console.log("RFC recibido:", usDto.rfc);
+        console.log('RFC recibido:', usDto.rfc);
         await this.rfcService.upRFC(usDto.rfc.id_rfc, usDto.rfc);
       }
       if (usDto.telefono_id) {
-        console.log("Teléfono recibido:", usDto.telefono_id);
-        await this.telService.upTel(usDto.telefono_id.id_telefono, usDto.telefono_id);
+        console.log('Teléfono recibido:', usDto.telefono_id);
+        await this.telService.upTel(
+          usDto.telefono_id.id_telefono,
+          usDto.telefono_id,
+        );
       }
       if (usDto.rol && usDto.rol.length > 0) {
         // Actualizar roles usando el servicio correspondiente
         for (const rol of usDto.rol) {
-          console.log("Rol recibido:", rol);
+          console.log('Rol recibido:', rol);
           await this.rolesService.cambiarRol(usDto.codigo, rol);
-          console.log("DEPURANDO CICLO FOR");
+          console.log('DEPURANDO CICLO FOR');
         }
       }
-  
+
       // Actualizar el usuario principal
       const camposPermitidos = [
         'codigo',
@@ -219,22 +220,21 @@ export class UsuariosService {
         'sexo',
         'contrasena',
       ];
-  
+
       // Copiar solo los campos permitidos del DTO al usuario existente
       for (const campo of camposPermitidos) {
         if (usDto[campo] !== undefined && usDto[campo] !== null) {
           usuarioExistente[campo] = usDto[campo];
         }
       }
-  
+
       console.log('Datos a actualizar en usuario principal:', usuarioExistente);
-  
+
       // Guardar los cambios en la base de datos
       await this.usuariosRepository.save(usuarioExistente);
-  
+
       // Retornar el usuario actualizado
       return usuarioExistente;
-  
     } catch (error) {
       throw new HttpException(
         error.message || 'Error al intentar actualizar el usuario',
@@ -242,8 +242,6 @@ export class UsuariosService {
       );
     }
   }
-  
-  
 
   /**
    * Esta función sirve para cambiar el estado "activo" de un usuario de 1 a 0

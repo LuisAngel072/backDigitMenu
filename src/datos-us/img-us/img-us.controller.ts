@@ -18,6 +18,6 @@ export class ImgUsController {
     }))
     async uploadFile(@UploadedFile() file: Express.Multer.File) {
         // Aquí, puedes retornar el nombre del archivo o la ruta relativa
-        return { img_ruta: file.filename };
+        return {img_ruta: file.filename};
     }
 }
