@@ -12,6 +12,8 @@ import { EmailModule } from './datos-us/email/email.module';
 import { ImgUsModule } from './datos-us/img-us/img-us.module';
 import { AuthModule } from './auth/auth.module';
 import { IngredientesModule } from './ingredientes/ingredientes.module';
+import { CategoriasModule } from './categorias/categorias.module';
+import { SubCategoriasModule } from './sub-categorias/sub-categorias.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { IngredientesModule } from './ingredientes/ingredientes.module';
     ImgUsModule,
     AuthModule,
     IngredientesModule,
+    CategoriasModule,
+    SubCategoriasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
