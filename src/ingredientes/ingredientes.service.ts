@@ -14,7 +14,7 @@ export class IngredientesService {
 
   async obtenerIngredientes() {
     try {
-      const ingredientes = this.ingredientesRepository.find();
+      const ingredientes = await this.ingredientesRepository.find();
 
       if (!ingredientes) {
         throw new HttpException(
@@ -33,7 +33,7 @@ export class IngredientesService {
 
   async crearIngrediente(body: CrearIngredienteDTO) {
     try {
-      const ingrN = this.ingredientesRepository.create(body);
+      const ingrN = await this.ingredientesRepository.create(body);
       await this.ingredientesRepository.save(ingrN);
 
       return ingrN;
@@ -48,7 +48,7 @@ export class IngredientesService {
 
   async updtIngrediente(id_ingr: number, body: UpIngredienteDTO) {
     try {
-      const ingrF = this.ingredientesRepository.findOne({
+      const ingrF = await this.ingredientesRepository.findOne({
         where: { id_ingr: id_ingr },
       });
 
@@ -56,7 +56,7 @@ export class IngredientesService {
         throw new HttpException('IngrF no encontrado', HttpStatus.NOT_FOUND);
       }
 
-      const upIngr = this.ingredientesRepository.update(id_ingr, body);
+      const upIngr = await this.ingredientesRepository.update(id_ingr, body);
       return upIngr;
     } catch (error) {
       console.error('Error al actualizar el ingrediente:', error);
@@ -67,9 +67,9 @@ export class IngredientesService {
     }
   }
 
-  delIngr(id_ingr: number) {
+  async delIngr(id_ingr: number) {
     try {
-      const ingrF = this.ingredientesRepository.findOne({
+      const ingrF = await this.ingredientesRepository.findOne({
         where: { id_ingr: id_ingr },
       });
 

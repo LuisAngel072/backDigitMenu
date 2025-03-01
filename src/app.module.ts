@@ -14,6 +14,8 @@ import { AuthModule } from './auth/auth.module';
 import { IngredientesModule } from './ingredientes/ingredientes.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { SubCategoriasModule } from './sub-categorias/sub-categorias.module';
+import { ExtrasModule } from './extras/extras.module';
+import { OpcionesModule } from './opciones/opciones.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { SubCategoriasModule } from './sub-categorias/sub-categorias.module';
     IngredientesModule,
     CategoriasModule,
     SubCategoriasModule,
+    ExtrasModule,
+    OpcionesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
