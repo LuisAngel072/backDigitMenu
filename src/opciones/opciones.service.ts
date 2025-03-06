@@ -51,7 +51,7 @@ export class OpcionesService {
       console.error('Ocurrió un error al obtener la opción', error);
       throw new HttpException(
         'Ocurrió un error al obtener la opción',
-        HttpStatus.NOT_FOUND,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -88,6 +88,7 @@ export class OpcionesService {
         );
 
         return opcUp;
+        
       }
     } catch (error) {
       console.error('Ocurrió un error al intentar actualizar la opción');

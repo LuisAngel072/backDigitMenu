@@ -16,6 +16,7 @@ import { CategoriasModule } from './categorias/categorias.module';
 import { SubCategoriasModule } from './sub-categorias/sub-categorias.module';
 import { ExtrasModule } from './extras/extras.module';
 import { OpcionesModule } from './opciones/opciones.module';
+import { PedidosModule } from './pedidos/pedidos.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { OpcionesModule } from './opciones/opciones.module';
     SubCategoriasModule,
     ExtrasModule,
     OpcionesModule,
+    PedidosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

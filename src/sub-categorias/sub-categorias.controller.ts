@@ -29,7 +29,7 @@ export class SubCategoriasController {
     return await this.subCatService.getSubCategorias();
   }
 
-  @Get()
+  @Get(':id_subcat')
   @Auth(
     Roles_validos.admin,
     Roles_validos.cajero,
@@ -48,7 +48,7 @@ export class SubCategoriasController {
     return await this.subCatService.crSubCat(subCatDto);
   }
 
-  @Patch('editar')
+  @Patch('editar/:id_subcat')
   @Auth(Roles_validos.admin)
   async editarSubcategoria(
     @Param('id_subcat', ParseIntPipe) id_subcat: number,
@@ -57,7 +57,7 @@ export class SubCategoriasController {
     return await this.subCatService.upSubCat(id_subcat, upSubCatDTO);
   }
 
-  @Delete('eliminar')
+  @Delete('eliminar/:id_subcat')
   @Auth(Roles_validos.admin)
   async eliminarSubcategoria(
     @Param('id_subcat', ParseIntPipe) id_subcat: number,

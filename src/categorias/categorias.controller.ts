@@ -29,7 +29,7 @@ export class CategoriasController {
     return await this.catService.getCategorias();
   }
 
-  @Get()
+  @Get(':id_cat')
   @Auth(
     Roles_validos.admin,
     Roles_validos.cajero,
@@ -46,7 +46,7 @@ export class CategoriasController {
     return await this.catService.crCategoria(catDto);
   }
 
-  @Patch('actualizar')
+  @Patch('actualizar/:id_cat')
   @Auth(Roles_validos.admin)
   async actualizarCategoria(
     @Param('id_cat', ParseIntPipe) id_cat: number,
@@ -55,7 +55,7 @@ export class CategoriasController {
     return await this.catService.upCategoria(id_cat, upCatDto);
   }
 
-  @Delete('eliminar')
+  @Delete('eliminar/:id_cat')
   @Auth(Roles_validos.admin)
   async eliminarCategoria(@Param('id_cat', ParseIntPipe) id_cat: number) {
     return await this.catService.delCategoria(id_cat);

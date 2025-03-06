@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -24,20 +25,20 @@ export class IngredientesController {
 
   @Auth(Roles_validos.admin)
   @Post('registrar')
-  async registrarIngrediente(body: CrearIngredienteDTO) {
+  async registrarIngrediente(@Body() body: CrearIngredienteDTO) {
     return await this.ingredientesService.crearIngrediente(body);
   }
   @Auth(Roles_validos.admin)
-  @Patch('actualizar')
+  @Patch('actualizar/:id_ingr')
   async actualizarIngrediente(
     @Param('id_ingr', ParseIntPipe) id_ingr: number,
-    body: UpIngredienteDTO,
+    @Body() body: UpIngredienteDTO,
   ) {
     return await this.ingredientesService.updtIngrediente(id_ingr, body);
   }
 
   @Auth(Roles_validos.admin)
-  @Delete('eliminar')
+  @Delete('eliminar/:id_ingr')
   async eliminarUsuario(@Param('id_ingr', ParseIntPipe) id_ingr: number) {
     return await this.ingredientesService.delIngr(id_ingr);
   }

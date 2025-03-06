@@ -1,5 +1,6 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+@Entity({name:'opciones'})
 export class Opciones {
   @PrimaryGeneratedColumn('increment', { name: 'id_opcion', type: 'tinyint' })
   id_opcion: number;
@@ -20,5 +21,5 @@ export class Opciones {
     unsigned: true,
     nullable: false,
   })
-  porcentajse: number;
+  porcentaje: number;
 }

@@ -71,6 +71,7 @@ export class UsuariosService {
   async encontrarUsuarios() {
     try {
       const usuarios = this.usuariosRepository.find();
+      
       if (!usuarios) {
         throw new HttpException(
           'Usuarios no encontrados',
@@ -165,6 +166,7 @@ export class UsuariosService {
       const usuarioExistente = await this.usuariosRepository.findOne({
         where: { id_usuario: id },
       });
+ 
       if (!usuarioExistente) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
       }

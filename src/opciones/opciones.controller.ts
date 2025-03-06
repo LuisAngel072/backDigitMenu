@@ -26,16 +26,16 @@ export class OpcionesController {
       }
     
       @Auth(Roles_validos.admin)
-      @Patch('actualizar')
+      @Patch('actualizar/:id_opcion')
       async upExtra(
-        @Param('id_extra', ParseIntPipe) id_opcion: number,
+        @Param('id_opcion', ParseIntPipe) id_opcion: number,
         @Body() upOpcionesDto: UpOpcionesDto,
       ) {
         return await this.opcionesService.upOpcion(id_opcion, upOpcionesDto);
       }
     
       @Auth(Roles_validos.admin)
-      @Delete('eliminar')
+      @Delete('eliminar/:id_opcion')
       async delExtra(@Param('id_opcion', ParseIntPipe) id_opcion: number) {
         return await this.opcionesService.delOpcion(id_opcion);
       }

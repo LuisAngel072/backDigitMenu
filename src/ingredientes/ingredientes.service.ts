@@ -33,7 +33,7 @@ export class IngredientesService {
 
   async crearIngrediente(body: CrearIngredienteDTO) {
     try {
-      const ingrN = await this.ingredientesRepository.create(body);
+      const ingrN = this.ingredientesRepository.create(body);
       await this.ingredientesRepository.save(ingrN);
 
       return ingrN;
