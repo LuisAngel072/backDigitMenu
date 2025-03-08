@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { CrearUsuarioDto } from './dtos/crear-usuario.dto';
+import { CrearUsuarioDto } from '../subcategorias/dtos/crear-usuario.dto';
 import { UsuariosService } from './usuarios.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Roles_validos } from 'src/usuarios/interfaces/roles_validos.enum';

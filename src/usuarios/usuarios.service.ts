@@ -2,7 +2,7 @@ import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nes
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuarios } from './entities/usuarios.entity';
 import { Repository } from 'typeorm';
-import { CrearUsuarioDto } from './dtos/crear-usuario.dto';
+import { CrearUsuarioDto } from '../subcategorias/dtos/crear-usuario.dto';
 import { Telefonos } from 'src/datos-us/telefono/entities/telefono.entity';
 import { TelefonoService } from 'src/datos-us/telefono/telefono.service';
 import { EmailService } from 'src/datos-us/email/email.service';
