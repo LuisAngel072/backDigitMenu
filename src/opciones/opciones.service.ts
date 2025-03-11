@@ -28,7 +28,7 @@ export class OpcionesService {
       console.error('Ocurrio al obtener las opciones', error);
       throw new HttpException(
         'Ocurrio al obtener las opciones',
-        HttpStatus.NOT_FOUND,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -58,11 +58,12 @@ export class OpcionesService {
 
   async crOpcion(crOpcDto: CrOpcionesDto) {
     try {
-      const opcN = await this.opcionesRepository.create(crOpcDto);
+      console.log(crOpcDto)
+      const opcN = this.opcionesRepository.create(crOpcDto);
 
-      await this.opcionesRepository.save(crOpcDto);
+      const opcS = await this.opcionesRepository.save(opcN);
 
-      return opcN;
+      return opcS;
     } catch (error) {
       console.error('Ocurrió un error al intentar crear la opción');
       throw new HttpException(

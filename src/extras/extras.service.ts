@@ -52,10 +52,10 @@ export class ExtrasService {
 
   async crExtra(extrasDto: CrExtrasDto) {
     try {
-      const extraN = await this.extrasRepository.create(extrasDto);
-      await this.extrasRepository.save(extraN);
+      const extraN = this.extrasRepository.create(extrasDto);
+      const extraS = await this.extrasRepository.save(extraN);
 
-      return extraN;
+      return extraS;
     } catch (error) {
       console.error('Error al guardar el extra:', error);
       throw new HttpException(

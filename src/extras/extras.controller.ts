@@ -23,7 +23,7 @@ export class ExtrasController {
     return await this.extrasService.getExtras();
   }
 
-  @Get()
+  @Get(':id_extra')
   async getExtra(@Param('id_extra', ParseIntPipe) id_extra: number) {
     return await this.extrasService.getExtra(id_extra);
   }
@@ -31,6 +31,7 @@ export class ExtrasController {
   @Auth(Roles_validos.admin)
   @Post('registrar')
   async crExtra(@Body() crExtraDto: CrExtrasDto) {
+    console.log(crExtraDto)
     return await this.extrasService.crExtra(crExtraDto);
   }
 

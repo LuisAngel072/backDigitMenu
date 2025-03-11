@@ -2,10 +2,10 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({name:'extras'})
 export class Extras {
-  @PrimaryGeneratedColumn('increment', { name: 'id_extra', type: 'tinyint' })
+  @PrimaryGeneratedColumn('increment', { name: 'id_extra', type:'smallint' })
   id_extra: number;
 
-  @Column({ name: 'id_extra', type: 'varchar', length: 80, nullable: false })
+  @Column({ name: 'nombre_extra', type: 'varchar', length: 80, nullable: false })
   nombre_extra: string;
 
   @Column({

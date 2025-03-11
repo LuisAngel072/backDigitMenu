@@ -11,7 +11,7 @@ export class OpcionesController {
     
       @Get()
       async getOpciones() {
-        return await this.opcionesService.getOpciones;
+        return await this.opcionesService.getOpciones();
       }
     
       @Get()
@@ -22,6 +22,7 @@ export class OpcionesController {
       @Auth(Roles_validos.admin)
       @Post('registrar')
       async crExtra(@Body() crOpcionesDto: CrOpcionesDto) {
+        console.log(crOpcionesDto)
         return await this.opcionesService.crOpcion(crOpcionesDto);
       }
     

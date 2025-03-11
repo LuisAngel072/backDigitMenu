@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({name:'opciones'})
 export class Opciones {
-  @PrimaryGeneratedColumn('increment', { name: 'id_opcion', type: 'tinyint' })
+  @PrimaryGeneratedColumn('increment', { name: 'id_opcion', type: 'smallint' })
   id_opcion: number;
 
   @Column({
