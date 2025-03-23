@@ -36,7 +36,7 @@ export class ExtrasController {
   }
 
   @Auth(Roles_validos.admin)
-  @Patch('actualizar')
+  @Patch('actualizar/:id_extra')
   async upExtra(
     @Param('id_extra', ParseIntPipe) id_extra: number,
     @Body() upExtrasDTO: UpExtrasDTO,
@@ -45,7 +45,7 @@ export class ExtrasController {
   }
 
   @Auth(Roles_validos.admin)
-  @Delete('eliminar')
+  @Delete('eliminar/:id_extra')
   async delExtra(@Param('id_extra', ParseIntPipe) id_extra: number) {
     return await this.extrasService.delExtra(id_extra);
   }

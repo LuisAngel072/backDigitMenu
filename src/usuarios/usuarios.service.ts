@@ -102,38 +102,26 @@ export class UsuariosService {
       const domicilio = await this.domService.crDom(usDto.domicilio);
       const email = await this.emService.crEmail(usDto.email_id);
       const telefono = await this.telService.crTel(usDto.telefono_id);
+      const imgPerfil = await this.imgService.crImg(usDto.img_perfil);
+      const rfc = await this.rfcService.crRFC(usDto.rfc);
+      const nss = await this.nssService.crNss(usDto.nss);
 
-      let rfc = null;
-      if (usDto.rfc) {
-        rfc = await this.rfcService.crRFC(usDto.rfc);
-      }
-
-      let nss = null;
-      if (usDto.nss) {
-        nss = await this.nssService.crNss(usDto.nss);
-      }
-
-      // Busca o crea la imagen de perfil (Img_us)
-      let imgPerfil: Img_us | null = null;
-
-      if (usDto.img_perfil) {
-        imgPerfil = await this.imgService.crImg(usDto.img_perfil);
-      }
+      
       const hashedPassword = await bcrypt.hash(usDto.contrasena, 10);
       // Crear instancia del usuario con las relaciones necesarias
       const usuario = this.usuariosRepository.create({
         codigo: usDto.codigo,
         nombres: usDto.nombres,
         primer_apellido: usDto.primer_apellido,
-        segundo_apellido: usDto.segundo_apellido || null,
+        segundo_apellido: usDto.segundo_apellido,
         sexo: usDto.sexo,
         contrasena: hashedPassword,
-        img_perfil: imgPerfil || null, // Relación con la entidad Img_us
+        img_perfil: imgPerfil, // Relación con la entidad Img_us
         telefono_id: telefono,
         email_id: email,
         domicilio: domicilio,
-        rfc: rfc || null,
-        nss: nss || null,
+        rfc: rfc,
+        nss: nss,
       });
 
       // Guardar el usuario en la base de datos
@@ -238,9 +226,10 @@ export class UsuariosService {
       // Retornar el usuario actualizado
       return usuarioExistente;
     } catch (error) {
+      console.error(error)
       throw new HttpException(
         error.message || 'Error al intentar actualizar el usuario',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.BAD_REQUEST,
       );
     }
   }

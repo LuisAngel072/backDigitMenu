@@ -50,7 +50,6 @@ export class CrearUsuarioDto {
     contrasena:string;
 
     @IsOptional()
-    @IsString()
     img_perfil: Img_us;
 
     @IsNotEmpty()

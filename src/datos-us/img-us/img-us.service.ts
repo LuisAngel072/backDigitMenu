@@ -1,3 +1,4 @@
+import { promises as fs } from 'fs';
 import {
   HttpException,
   HttpStatus,
@@ -11,6 +12,7 @@ import { Img_us } from './entities/img_us.entity';
 import { Repository } from 'typeorm';
 import { CreateImgUsDTO } from './dto/cr-imgus.dto';
 import { UpImgUsDTO } from './dto/up-imgus.dto';
+import { join } from 'path';
 
 @Injectable()
 export class ImgUsService {
@@ -39,8 +41,11 @@ export class ImgUsService {
       const imgF = await this.getImg(imgDto.img_ruta);
       if (imgF !== null) return imgF;
       else {
+        if (!imgDto.img_ruta || imgDto.img_ruta === null) {
+          imgDto.img_ruta = 'Pendiente';
+        }
         const imgN = this.imgRepository.create(imgDto);
-        console.log('Guardando imagen', imgN)
+        console.log('Guardando imagen', imgN);
         await this.imgRepository.save(imgN);
 
         return imgN;
@@ -56,19 +61,43 @@ export class ImgUsService {
 
   async upImg(id_img: number, upImgDto: UpImgUsDTO) {
     try {
-      const imgF = await this.getImg(upImgDto.img_ruta);
-      if (!imgF) {
-        throw new HttpException('ImgUs no encontrado', HttpStatus.NOT_FOUND);
+      const imgF = await this.imgRepository.findOne({where:{id_img:id_img}});
+
+      // Consulta la imagen actual (la antigua)
+      const previousImg = await this.imgRepository.findOne({
+        where: { id_img },
+      });
+      if (!previousImg) {
+        throw new HttpException('Imagen no encontrada', HttpStatus.NOT_FOUND);
       }
+      // Guarda la ruta antigua para eliminarla después
+      const previousImgRuta = previousImg.img_ruta;
       if (imgF) {
         const img = await this.imgRepository.update(id_img, upImgDto);
-        return img;
+        const updatedImg = await this.imgRepository.findOne({
+          where: { id_img },
+        });
+
+        // Si la ruta nueva es distinta a la anterior, elimina el archivo antiguo
+        if (previousImgRuta && previousImgRuta !== upImgDto.img_ruta) {
+          // Construir la ruta completa al archivo (asegúrate de que la carpeta 'uploads' sea la correcta)
+          const filePath = join(process.cwd(), 'uploads', previousImgRuta);
+          try {
+            await fs.unlink(filePath);
+            console.log('Archivo eliminado:', filePath);
+          } catch (err) {
+            console.error('Error al eliminar el archivo:', err);
+            // Puedes decidir si lanzar error o continuar
+          }
+        }
+
+        return updatedImg;
       }
     } catch (error) {
       console.error('Error al guardar el img del usuario:', error);
       throw new HttpException(
         'Ocurrió un error al obtener el registro del img',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.BAD_REQUEST,
       );
     }
   }

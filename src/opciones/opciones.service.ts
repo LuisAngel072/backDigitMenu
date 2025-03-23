@@ -39,7 +39,7 @@ export class OpcionesService {
         where: { id_opcion: id_opcion },
       });
 
-      if (opcF) {
+      if (!opcF) {
         throw new HttpException(
           'No se encontró la opción',
           HttpStatus.NOT_FOUND,
@@ -65,7 +65,7 @@ export class OpcionesService {
 
       return opcS;
     } catch (error) {
-      console.error('Ocurrió un error al intentar crear la opción');
+      console.error('Ocurrió un error al intentar crear la opción', error);
       throw new HttpException(
         'Ocurrió un error al intentar crear la opción',
         HttpStatus.BAD_REQUEST,
