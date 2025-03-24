@@ -17,7 +17,7 @@ export class UsuariosController {
     }
 
     @Auth(Roles_validos.admin)
-    @Get()
+    @Get('/:codigo')
     async encontrarUnUsuarios(@Param('codigo') codigo:string) {
       return await this.usuariosService.encontrarUnUsuario(codigo);
     }

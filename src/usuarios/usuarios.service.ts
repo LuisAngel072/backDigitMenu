@@ -55,6 +55,7 @@ export class UsuariosService {
     try {
       const usuario = this.usuariosRepository.findOne({
         where: { codigo: codigo },
+        relations: {img_perfil: true},
       });
       if (!usuario) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
