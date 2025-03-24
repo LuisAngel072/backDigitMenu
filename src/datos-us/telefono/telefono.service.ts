@@ -3,6 +3,7 @@ import { Telefonos } from './entities/telefono.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTelefonosDTO } from './dtos/cr_tel.dto';
+import { UpTelDto } from './dtos/up_tel.dto';
 
 @Injectable()
 export class TelefonoService {
@@ -34,6 +35,20 @@ export class TelefonoService {
         } catch (error) {
             console.error('Error al guardar el telefono:', error);
             throw new HttpException('Ocurrió un error al obtener el registro del telefono', HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    async upTel(id_telefono: number,telDTO: UpTelDto) {
+        try {
+            const telF = await this.telRepository.findOne({where:{id_telefono:id_telefono}})
+            if(!telF) throw new HttpException('Telefono no encontrado', HttpStatus.NOT_FOUND);;
+            if(telF) {
+                const tel = await this.telRepository.update(id_telefono, telDTO);
+                return tel;
+            }
+        }catch(error) {
+            console.error('Error al actualizar el telefono:', error);
+            throw new HttpException('Ocurrió un error al obtener el registro del Telefono', HttpStatus.BAD_REQUEST);
         }
     }
 }

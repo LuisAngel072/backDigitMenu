@@ -1,5 +1,24 @@
+
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { UsuariosModule } from './usuarios/usuarios.module';
+import { DomicilioModule } from './datos-us/domicilio/domicilio.module';
+import { TelefonoModule } from './datos-us/telefono/telefono.module';
+import { RfcModule } from './datos-us/rfc/rfc.module';
+import { NssModule } from './datos-us/nss/nss.module';
+import { EmailModule } from './datos-us/email/email.module';
+import { ImgUsModule } from './datos-us/img-us/img-us.module';
+import { AuthModule } from './auth/auth.module';
+import { IngredientesModule } from './ingredientes/ingredientes.module';
 import { CategoriasModule } from './categorias/categorias.module';
-import { SubcategoriasModule } from './subcategorias/subcategorias.module';
+import { SubCategoriasModule } from './sub-categorias/sub-categorias.module';
+import { ExtrasModule } from './extras/extras.module';
+import { OpcionesModule } from './opciones/opciones.module';
+import { PedidosModule } from './pedidos/pedidos.module';
+
 
 @Module({
   imports: [
@@ -24,6 +43,12 @@ import { SubcategoriasModule } from './subcategorias/subcategorias.module';
     EmailModule,
     ImgUsModule,
     AuthModule,
+    IngredientesModule,
+    CategoriasModule,
+    SubCategoriasModule,
+    ExtrasModule,
+    OpcionesModule,
+    PedidosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

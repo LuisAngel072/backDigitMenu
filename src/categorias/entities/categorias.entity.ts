@@ -1,14 +1,22 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { SubCategorias } from 'src/subcategorias/entities/subcategorias.entity';
 
-@Entity({ name: 'categorias' })
+import { Sub_categorias } from 'src/sub-categorias/entities/sub_categorias.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity('categorias')
 export class Categorias {
-  @PrimaryGeneratedColumn({ name: 'id_cat' })
+  @PrimaryGeneratedColumn('increment', { name: 'id_cat', type: 'tinyint' })
   id_cat: number;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ name: 'nombre_cat', type: 'varchar', length: 60, nullable: false })
   nombre_cat: string;
 
-  @OneToMany(() => SubCategorias, (subcategoria) => subcategoria.categoria)
-  subcategorias: SubCategorias[];
+  @Column({ name: 'ruta_img', length: 255, nullable: true })
+  ruta_img: string;
+
+  @OneToMany(
+    () => Sub_categorias,
+    (sub_categoria) => sub_categoria.categoria_id,
+  )
+  sub_categoria: Sub_categorias;
+
 }

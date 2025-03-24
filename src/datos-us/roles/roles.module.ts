@@ -5,6 +5,7 @@ import { Usuarios } from 'src/usuarios/entities/usuarios.entity';
 import { UsuariosHasRoles } from './entities/usuarios_has_roles.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
+import { RolesController } from './roles.controller';
 
 @Module({
   imports:[
@@ -14,6 +15,7 @@ import { AuthModule } from 'src/auth/auth.module';
         Roles,
         Usuarios,UsuariosHasRoles])],
   providers: [RolesService],
-  exports: [RolesService]
+  exports: [RolesService],
+  controllers: [RolesController]
 })
 export class RolesModule {}

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Domicilios } from './entities/domicilio.entity';
 import { Repository } from 'typeorm';
 import { CreateDomicilioDto } from './dtos/cr-dom.dto';
+import { UpDomDto } from './dtos/up-dom.dto';
 
 @Injectable()
 export class DomicilioService {
@@ -52,6 +53,23 @@ export class DomicilioService {
         } catch (error) {
           console.error('Error al guardar el domicilio:', error);
           throw new HttpException('Domicilio no creado', HttpStatus.BAD_REQUEST);
+        }
+      }
+
+      async upDom(id_dom: number,upDomDto: UpDomDto) {
+        try {
+          const domF = await this.getDom(id_dom);
+          if (!domF)
+            throw new HttpException('Domicilio no encontrado', HttpStatus.NOT_FOUND);
+          if (domF) {
+            await this.domRepository.update(id_dom,upDomDto);
+            return await this.getDom(id_dom);
+          }
+        } catch (error) {
+            throw new HttpException(
+              error.message || 'Error al intentar actualizar al usuario',
+              error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
       }
 }
