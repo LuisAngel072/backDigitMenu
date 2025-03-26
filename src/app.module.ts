@@ -20,6 +20,7 @@ import { OpcionesModule } from './opciones/opciones.module';
 import { PedidosModule } from './pedidos/pedidos.module';
 
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -35,7 +36,7 @@ import { PedidosModule } from './pedidos/pedidos.module';
     }),
     UsuariosModule,
     CategoriasModule, // Agrega aquí
-    SubcategoriasModule, // Agrega aquí
+    SubCategoriasModule, // Agrega aquí
     DomicilioModule,
     TelefonoModule,
     RfcModule,

@@ -15,7 +15,7 @@ export class AuthService {
       async validarUsuario(codigo: string, contrasena: string) {
         const usuario = await this.usuariosService.encontrarUnUsuario(codigo);
       
-        if (usuario) {
+        if (usuario.activo) {
 
           const contrasenaValida = await bcrypt.compare(contrasena, usuario.contrasena); // Usa solo compare
           console.log('Contraseña válida:', contrasenaValida); // Asegúrate de que este log funcione

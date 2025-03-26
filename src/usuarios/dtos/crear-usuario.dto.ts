@@ -1,4 +1,4 @@
-import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { Email } from 'src/datos-us/email/entities/email.entity';
 import { Telefonos } from 'src/datos-us/telefono/entities/telefono.entity';
 import { SexoEnum } from '../entities/usuarios.entity';

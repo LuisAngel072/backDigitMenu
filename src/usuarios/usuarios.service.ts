@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuarios } from './entities/usuarios.entity';
 import { Repository } from 'typeorm';
-import { CrearUsuarioDto } from '../subcategorias/dtos/crear-usuario.dto';
+import { CrearUsuarioDto } from './dtos/crear-usuario.dto';
 import { Telefonos } from 'src/datos-us/telefono/entities/telefono.entity';
 import { TelefonoService } from 'src/datos-us/telefono/telefono.service';
 import { EmailService } from 'src/datos-us/email/email.service';
@@ -253,6 +253,36 @@ export class UsuariosService {
 
       // Actualizamos solo la propiedad "activo"
       await this.usuariosRepository.update(id_usuario, { activo: false });
+      // Si necesitas devolver la entidad actualizada, la buscas nuevamente
+      const usuarioActualizado = await this.usuariosRepository.findOne({
+        where: { id_usuario },
+      });
+      return usuarioActualizado;
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Error al intentar desactivar el usuario',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Esta función sirve para cambiar el estado "activo" de un usuario de 0 a 1
+   * Indicando que el usuario ha sido reactivado
+   * @param id_usuario Usuario a reactivar
+   * @returns
+   */
+  async reactivarUsuario(id_usuario: number) {
+    try {
+      const usF = await this.usuariosRepository.findOne({
+        where: { id_usuario },
+      });
+      if (!usF) {
+        throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+      }
+
+      // Actualizamos solo la propiedad "activo"
+      await this.usuariosRepository.update(id_usuario, { activo: true });
       // Si necesitas devolver la entidad actualizada, la buscas nuevamente
       const usuarioActualizado = await this.usuariosRepository.findOne({
         where: { id_usuario },
