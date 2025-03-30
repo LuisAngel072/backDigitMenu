@@ -18,6 +18,7 @@ import { SubCategoriasModule } from './sub-categorias/sub-categorias.module';
 import { ExtrasModule } from './extras/extras.module';
 import { OpcionesModule } from './opciones/opciones.module';
 import { PedidosModule } from './pedidos/pedidos.module';
+import { ProductosModule } from './productos/productos.module';
 
 
 
@@ -50,6 +51,7 @@ import { PedidosModule } from './pedidos/pedidos.module';
     ExtrasModule,
     OpcionesModule,
     PedidosModule,
+    ProductosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
