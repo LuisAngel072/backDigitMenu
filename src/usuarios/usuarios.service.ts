@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuarios } from './entities/usuarios.entity';
 import { Repository } from 'typeorm';
@@ -22,7 +17,6 @@ import { Img_us } from 'src/datos-us/img-us/entities/img_us.entity';
 import { ImgUsService } from 'src/datos-us/img-us/img-us.service';
 import { RolesService } from 'src/datos-us/roles/roles.service';
 import * as bcrypt from 'bcrypt';
-import { SHA256 } from 'crypto-js';
 import { UpUsuarioDto } from './dtos/up-usuario.dto';
 
 @Injectable()
@@ -55,13 +49,14 @@ export class UsuariosService {
     try {
       const usuario = this.usuariosRepository.findOne({
         where: { codigo: codigo },
-        relations: {img_perfil: true},
+        relations: { img_perfil: true },
       });
       if (!usuario) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
       }
       return usuario;
     } catch (error) {
+      console.error(error);
       throw new HttpException(
         'Oops, algo salió mal al intentar encontrar usuario',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -72,7 +67,7 @@ export class UsuariosService {
   async encontrarUsuarios() {
     try {
       const usuarios = this.usuariosRepository.find();
-      
+
       if (!usuarios) {
         throw new HttpException(
           'Usuarios no encontrados',
@@ -81,6 +76,7 @@ export class UsuariosService {
       }
       return usuarios;
     } catch (error) {
+      console.error(error);
       throw new HttpException(
         'Oops, algo salió mal',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -90,7 +86,6 @@ export class UsuariosService {
 
   async CrearUsuario(usDto: CrearUsuarioDto) {
     try {
-
       const usF = await this.encontrarUnUsuario(usDto.codigo);
       if (usF) {
         console.log(usF);
@@ -107,7 +102,6 @@ export class UsuariosService {
       const rfc = await this.rfcService.crRFC(usDto.rfc);
       const nss = await this.nssService.crNss(usDto.nss);
 
-      
       const hashedPassword = await bcrypt.hash(usDto.contrasena, 10);
       // Crear instancia del usuario con las relaciones necesarias
       const usuario = this.usuariosRepository.create({
@@ -155,7 +149,7 @@ export class UsuariosService {
       const usuarioExistente = await this.usuariosRepository.findOne({
         where: { id_usuario: id },
       });
- 
+
       if (!usuarioExistente) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
       }
@@ -227,7 +221,7 @@ export class UsuariosService {
       // Retornar el usuario actualizado
       return usuarioExistente;
     } catch (error) {
-      console.error(error)
+      console.error(error);
       throw new HttpException(
         error.message || 'Error al intentar actualizar el usuario',
         error.status || HttpStatus.BAD_REQUEST,

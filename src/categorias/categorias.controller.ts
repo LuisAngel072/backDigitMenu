@@ -24,23 +24,11 @@ export class CategoriasController {
   constructor(private readonly catService: CategoriasService) {}
 
   @Get()
-  @Auth(
-    Roles_validos.admin,
-    Roles_validos.cajero,
-    Roles_validos.cocinero,
-    Roles_validos.mesero,
-  )
   async obtenerCategorias() {
     return await this.catService.getCategorias();
   }
 
   @Get(':id_cat')
-  @Auth(
-    Roles_validos.admin,
-    Roles_validos.cajero,
-    Roles_validos.cocinero,
-    Roles_validos.mesero,
-  )
   async obtenerCategoria(@Param('id_cat', ParseIntPipe) id_cat: number) {
     return await this.catService.getCategoria(id_cat);
   }
@@ -55,7 +43,7 @@ export class CategoriasController {
   @Auth(Roles_validos.admin)
   async actualizarCategoria(
     @Param('id_cat', ParseIntPipe) id_cat: number,
-    upCatDto: UpCategoriasDto,
+    @Body() upCatDto: UpCategoriasDto,
   ) {
     return await this.catService.upCategoria(id_cat, upCatDto);
   }
@@ -82,6 +70,6 @@ export class CategoriasController {
   )
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     // Aquí, puedes retornar el nombre del archivo o la ruta relativa
-    return { img_ruta: file.filename };
+    return { ruta_img: file.filename };
   }
 }

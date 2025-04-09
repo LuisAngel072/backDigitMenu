@@ -1,6 +1,13 @@
 import { Categorias } from 'src/categorias/entities/categorias.entity';
 import { Productos } from 'src/productos/entities/productos.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('sub_categorias')
 export class Sub_categorias {
@@ -14,7 +21,7 @@ export class Sub_categorias {
   ruta_img: string;
 
   @ManyToOne(() => Categorias, (categorias) => categorias.sub_categoria)
-  @JoinColumn({name:'categoria_id'})
+  @JoinColumn({ name: 'categoria_id' })
   categoria_id: Categorias;
 
   @OneToMany(() => Productos, (producto) => producto.sub_cat_id)

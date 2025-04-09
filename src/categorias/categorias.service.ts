@@ -1,11 +1,11 @@
-
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { promises as fs } from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Categorias } from './entities/categorias.entity';
 import { Repository } from 'typeorm';
 import { CrearCategoriaDTO } from './dtos/cr-categoria.dto';
 import { UpCategoriasDto } from './dtos/up-categorias.dto';
-
+import { join } from 'path';
 
 @Injectable()
 export class CategoriasService {
@@ -74,14 +74,25 @@ export class CategoriasService {
   async upCategoria(id_cat: number, catDto: UpCategoriasDto) {
     try {
       const catF = await this.getCategoria(id_cat);
-
+      console.log(catDto);
+      console.log(catF);
       if (!catF) {
         throw new HttpException(
           'Categoria no encontrada',
           HttpStatus.NOT_FOUND,
         );
       } else {
+        const ruta_img = catF.ruta_img;
         const catUp = await this.categoriasRepository.update(id_cat, catDto);
+        if (ruta_img && ruta_img !== catDto.ruta_img) {
+          const ruta = join(process.cwd(), 'uploads', ruta_img);
+          try {
+            await fs.unlink(ruta);
+            console.log('Archivo eliminado:', ruta);
+          } catch (err) {
+            console.error('Error al eliminar el archivo:', err);
+          }
+        }
         return catUp;
       }
     } catch (error) {
@@ -103,6 +114,14 @@ export class CategoriasService {
           HttpStatus.NOT_FOUND,
         );
       } else {
+        const ruta = join(process.cwd(), 'uploads', catF.ruta_img);
+        try {
+          await fs.unlink(ruta);
+          console.log('Archivo eliminado:', ruta);
+        } catch (err) {
+          console.error('Error al eliminar el archivo:', err);
+          // Puedes decidir si lanzar error o continuar
+        }
         const catDel = await this.categoriasRepository.delete(id_cat);
         return catDel;
       }
@@ -113,6 +132,5 @@ export class CategoriasService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
   }
 }

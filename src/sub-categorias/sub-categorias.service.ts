@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { Categorias } from 'src/categorias/entities/categorias.entity';
 import { CrSubCategoriasDTO } from './dtos/cr-sub_cat.dto';
 import { UpSubCatDTO } from './dtos/up-sub_cat.dto';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class SubCategoriasService {
@@ -17,7 +19,9 @@ export class SubCategoriasService {
 
   async getSubCategorias() {
     try {
-      const subCats = await this.sub_categorias_repository.find();
+      const subCats = await this.sub_categorias_repository.find({
+        relations: { categoria_id: true },
+      });
 
       if (!subCats) {
         throw new HttpException(
@@ -72,7 +76,7 @@ export class SubCategoriasService {
       }
 
       const bodySubCat = {
-        nombre_subcat: subCatDto.nombre_cat,
+        nombre_subcat: subCatDto.nombre_subcat,
         ruta_img: subCatDto.ruta_img,
         categoria_id: catF,
       };
@@ -102,12 +106,13 @@ export class SubCategoriasService {
 
         if (!catF) {
           throw new HttpException(
-            'Categoria no encontrada',
+            'SubCategoria no encontrada',
             HttpStatus.NOT_FOUND,
           );
         } else {
+          const ruta_img = subCatF.ruta_img;
           const bodySubCat = {
-            nombre_subcat: upSubCatDTO.nombre_cat,
+            nombre_subcat: upSubCatDTO.nombre_subcat,
             ruta_img: upSubCatDTO.ruta_img,
             categoria_id: catF,
           };
@@ -116,8 +121,18 @@ export class SubCategoriasService {
             id_subcat,
             bodySubCat,
           );
+          if (ruta_img && ruta_img !== upSubCatDTO.ruta_img) {
+            const ruta = join(process.cwd(), 'uploads', ruta_img);
+            try {
+              await fs.unlink(ruta);
+              console.log('Archivo eliminado:', ruta);
+            } catch (err) {
+              console.error('Error al eliminar el archivo:', err);
+              // Puedes decidir si lanzar error o continuar
+            }
 
-          return subCatUp;
+            return subCatUp;
+          }
         }
       }
     } catch (error) {
@@ -134,10 +149,17 @@ export class SubCategoriasService {
       const subCatF = await this.getSubCategoria(id_subcat);
 
       if (subCatF) {
+        const ruta = join(process.cwd(), 'uploads', subCatF.ruta_img);
+        try {
+          await fs.unlink(ruta);
+          console.log('Archivo eliminado:', ruta);
+        } catch (err) {
+          console.error('Error al eliminar el archivo:', err);
+          // Puedes decidir si lanzar error o continuar
+        }
         const delSubCatf =
           await this.sub_categorias_repository.delete(id_subcat);
-        
-          return delSubCatf;
+        return delSubCatf;
       }
     } catch (error) {
       console.error('Error al eliminar la subcategoria:', error);

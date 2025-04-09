@@ -9,7 +9,7 @@ import {
 export class CrSubCategoriasDTO {
   @IsString()
   @MaxLength(60)
-  nombre_cat: string;
+  nombre_subcat: string;
 
   @IsOptional()
   @MaxLength(255)

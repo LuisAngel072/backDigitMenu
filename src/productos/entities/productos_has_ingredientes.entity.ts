@@ -12,11 +12,11 @@ export class Productos_has_ingredientes {
 
   @ManyToOne(() => Productos, (producto) => producto.prod_has_ingr_id)
   @JoinColumn({name:'producto_id'})
-  producto_id: number;
+  producto_id: Productos;
 
   @ManyToOne(() => Ingredientes, (ingrediente) => ingrediente.prod_has_ingr_id)
   @JoinColumn({name:'ingrediente_id'})
-  ingrediente_id: number;
+  ingrediente_id: Ingredientes;
 
   @Column({ name: 'precio', type: 'decimal', precision: 5, scale: 2 })
   precio: number;
