@@ -6,7 +6,6 @@ import { UsuariosService } from 'src/usuarios/usuarios.service';
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
-        private readonly usuariosService: UsuariosService,
       ) {}
     
       @Post('login')

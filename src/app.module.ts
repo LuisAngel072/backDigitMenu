@@ -1,3 +1,4 @@
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,13 +18,12 @@ import { SubCategoriasModule } from './sub-categorias/sub-categorias.module';
 import { ExtrasModule } from './extras/extras.module';
 import { OpcionesModule } from './opciones/opciones.module';
 import { PedidosModule } from './pedidos/pedidos.module';
+import { ProductosModule } from './productos/productos.module';
 import { MesasModule } from './mesas/mesas.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // Esto permite que las variables estén disponibles globalmente
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
@@ -35,6 +35,8 @@ import { MesasModule } from './mesas/mesas.module';
       autoLoadEntities: true,
     }),
     UsuariosModule,
+    CategoriasModule, // Agrega aquí
+    SubCategoriasModule, // Agrega aquí
     DomicilioModule,
     TelefonoModule,
     RfcModule,
@@ -48,6 +50,7 @@ import { MesasModule } from './mesas/mesas.module';
     ExtrasModule,
     OpcionesModule,
     PedidosModule,
+    ProductosModule,
     MesasModule,
   ],
   controllers: [AppController],

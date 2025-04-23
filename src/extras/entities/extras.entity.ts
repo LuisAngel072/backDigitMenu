@@ -1,11 +1,17 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Productos_has_extras } from 'src/productos/entities/productos_has_extras.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({name:'extras'})
+@Entity({ name: 'extras' })
 export class Extras {
-  @PrimaryGeneratedColumn('increment', { name: 'id_extra', type:'smallint' })
+  @PrimaryGeneratedColumn('increment', { name: 'id_extra', type: 'smallint' })
   id_extra: number;
 
-  @Column({ name: 'nombre_extra', type: 'varchar', length: 80, nullable: false })
+  @Column({
+    name: 'nombre_extra',
+    type: 'varchar',
+    length: 80,
+    nullable: false,
+  })
   nombre_extra: string;
 
   @Column({
@@ -17,4 +23,10 @@ export class Extras {
     unsigned: true,
   })
   precio: number;
+
+  @OneToMany(
+    () => Productos_has_extras,
+    (prod_has_extra) => prod_has_extra.extra_id,
+  )
+  prod_has_extra_id: Productos_has_extras[];
 }

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Productos_has_opciones } from 'src/productos/entities/productos_has_opciones.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({name:'opciones'})
 export class Opciones {
@@ -22,4 +23,10 @@ export class Opciones {
     nullable: false,
   })
   porcentaje: number;
+
+  @OneToMany(
+      () => Productos_has_opciones,
+      (prod_has_opc) => prod_has_opc.opcion_id,
+    )
+    prod_has_opc_id: Productos_has_opciones[];
 }

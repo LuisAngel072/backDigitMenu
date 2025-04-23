@@ -1,3 +1,4 @@
+
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { CrearUsuarioDto } from './dtos/crear-usuario.dto';
 import { UsuariosService } from './usuarios.service';
@@ -38,6 +39,12 @@ export class UsuariosController {
     @Patch('desactivar/:id_usuario')
     async desactivarUsuario(@Param('id_usuario', ParseIntPipe) id_usuario: number) {
       return await this.usuariosService.desactivarUsuario(id_usuario);
+    }
+
+    @Auth(Roles_validos.admin)
+    @Patch('reactivar/:id_usuario')
+    async reactivarUsuario(@Param('id_usuario', ParseIntPipe) id_usuario: number) {
+      return await this.usuariosService.reactivarUsuario(id_usuario);
     }
 
 }
