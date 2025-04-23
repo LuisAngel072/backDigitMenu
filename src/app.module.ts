@@ -19,8 +19,7 @@ import { ExtrasModule } from './extras/extras.module';
 import { OpcionesModule } from './opciones/opciones.module';
 import { PedidosModule } from './pedidos/pedidos.module';
 import { ProductosModule } from './productos/productos.module';
-
-
+import { MesasModule } from './mesas/mesas.module';
 
 @Module({
   imports: [
@@ -52,6 +51,7 @@ import { ProductosModule } from './productos/productos.module';
     OpcionesModule,
     PedidosModule,
     ProductosModule,
+    MesasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
