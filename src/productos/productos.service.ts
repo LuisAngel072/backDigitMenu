@@ -7,6 +7,7 @@ import { Productos_has_ingredientes } from './entities/productos_has_ingrediente
 import { Productos_has_opciones } from './entities/productos_has_opciones.entity';
 import { CrProductosDto } from './dtos/crear-producto.dto';
 import { UpProductosDto } from './dtos/up-producto.dto';
+import { Sub_categorias } from 'src/sub-categorias/entities/sub_categorias.entity';
 
 @Injectable()
 export class ProductosService {
@@ -19,11 +20,15 @@ export class ProductosService {
     private readonly prod_has_ingr: Repository<Productos_has_ingredientes>,
     @InjectRepository(Productos_has_opciones)
     private readonly prod_has_opc: Repository<Productos_has_opciones>,
+    @InjectRepository(Sub_categorias)
+    private readonly subCategoriasRepository: Repository<Sub_categorias>,
   ) {}
 
   async obtenerProductos() {
     try {
-      const productos = this.productosRepository.find();
+      const productos = this.productosRepository.find({
+        relations: ['sub_cat_id', 'sub_cat_id.categoria_id'],
+      });
 
       if (!productos) {
         throw new HttpException(
@@ -41,10 +46,10 @@ export class ProductosService {
       );
     }
   }
-  async obtenerProducto(id_producto: number) {
+  async obtenerProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
-        where: { id_producto },
+        where: { id_prod },
       });
       if (!producto) {
         throw new HttpException(
@@ -62,10 +67,10 @@ export class ProductosService {
     }
   }
 
-  async obtenerExtrasDeProducto(id_producto: number) {
+  async obtenerExtrasDeProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
-        where: { id_producto: id_producto },
+        where: { id_prod: id_prod },
       });
       const extras = await this.prod_has_extras.find({
         where: { producto_id: producto },
@@ -88,10 +93,10 @@ export class ProductosService {
     }
   }
 
-  async obtenerIngredientesDeProducto(id_producto: number) {
+  async obtenerIngredientesDeProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
-        where: { id_producto: id_producto },
+        where: { id_prod: id_prod },
       });
       const ingredientes = await this.prod_has_ingr.find({
         where: { producto_id: producto },
@@ -114,10 +119,10 @@ export class ProductosService {
     }
   }
 
-  async obtenerOpcionesDeProducto(id_producto: number) {
+  async obtenerOpcionesDeProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
-        where: { id_producto: id_producto },
+        where: { id_prod: id_prod },
       });
       const opciones = await this.prod_has_opc.find({
         where: { producto_id: producto },
@@ -142,46 +147,52 @@ export class ProductosService {
 
   async crearProducto(prodDTO: CrProductosDto) {
     try {
-      const producto = {
+      const sub_cat_id = await this.subCategoriasRepository.findOne({
+        where: { id_subcat: prodDTO.sub_cat_id },
+      });
+      // 1) Crear y guardar el producto principal
+      const prodEntity = this.productosRepository.create({
         nombre_prod: prodDTO.nombre_prod,
         descripcion: prodDTO.descripcion,
         precio: prodDTO.precio,
         img_prod: prodDTO.img_prod,
-        sub_cat_id: prodDTO.sub_cat_id,
-      };
+        sub_cat_id: sub_cat_id,
+      });
+      const prodS = await this.productosRepository.save(prodEntity);
 
-      const prodCr = this.productosRepository.create(producto);
-
-      const prodS = await this.productosRepository.save(prodCr);
-
+      // 2) Relación Extras
       if (prodDTO.extras) {
-        for (let i = 0; i < prodDTO.extras.length; i++) {
-          const p_h_e = {
+        for (const extra of prodDTO.extras) {
+          const relExtra = this.prod_has_extras.create({
             producto_id: prodS,
-            extra_id: prodDTO.extras[i],
-          };
-          let pheC = this.prod_has_extras.create(p_h_e);
-          await this.prod_has_extras.save(pheC);
+            extra_id: extra,
+            precio: extra.precio,
+          });
+          await this.prod_has_extras.save(relExtra);
         }
       }
+
+      // 3) Relación Ingredientes
       if (prodDTO.ingredientes) {
-        for (let i = 0; i < prodDTO.ingredientes.length; i++) {
-          const p_h_i = {
+        for (const ingr of prodDTO.ingredientes) {
+          const relIngr = this.prod_has_ingr.create({
             producto_id: prodS,
-            ingrediente_id: prodDTO.ingredientes[i],
-          };
-          let phiC = this.prod_has_ingr.create(p_h_i);
-          await this.prod_has_ingr.save(phiC);
+            ingrediente_id: ingr,
+            precio: ingr.precio,
+          });
+          await this.prod_has_ingr.save(relIngr);
         }
       }
+
+      // 4) Relación Opciones
       if (prodDTO.opciones) {
-        for (let i = 0; i < prodDTO.opciones.length; i++) {
-          const p_h_o = {
+        for (const opc of prodDTO.opciones) {
+          const relOpc = this.prod_has_opc.create({
             producto_id: prodS,
-            extra_id: prodDTO.opciones[i],
-          };
-          let phoC = this.prod_has_opc.create(p_h_o);
-          await this.prod_has_opc.save(phoC);
+            opcion_id: opc,
+            precio: opc.porcentaje,
+          });
+          await this.prod_has_opc.save(relOpc);
         }
       }
     } catch (error) {
@@ -192,10 +203,14 @@ export class ProductosService {
       );
     }
   }
-  async upProducto(id_producto: number, prodDto: UpProductosDto) {
+
+  async upProducto(id_prod: number, prodDto: UpProductosDto) {
     try {
-      let producto = await this.productosRepository.findOne({
-        where: { id_producto: id_producto },
+      const producto = await this.productosRepository.findOne({
+        where: { id_prod: id_prod },
+      });
+      const sub_cat_id = await this.subCategoriasRepository.findOne({
+        where: { id_subcat: prodDto.sub_cat_id },
       });
 
       if (!producto) {
@@ -219,9 +234,7 @@ export class ProductosService {
 
       producto.precio = prodDto.precio ? prodDto.precio : producto.precio;
 
-      producto.sub_cat_id = prodDto.sub_cat_id
-        ? prodDto.sub_cat_id
-        : producto.sub_cat_id;
+      producto.sub_cat_id = sub_cat_id ? sub_cat_id : producto.sub_cat_id;
 
       let relacionesEliminar = prodDto.extras.length; //Contabiliza las relaciones a eliminar
       let i = 0;
@@ -230,7 +243,7 @@ export class ProductosService {
         Por cada relación actualizada, disminuye el valor de relacionesEliminar, porque significa
         eliminar un registro o relación menos.
          */
-      for (let extra of prodDto.extras) {
+      for (const extra of prodDto.extras) {
         producto.prod_has_extra_id[i].extra_id = extra;
         i++;
         relacionesEliminar--;
@@ -244,7 +257,7 @@ export class ProductosService {
         */
       for (let j = 0; j < relacionesEliminar; j++) {
         //Busca una relación posible a eliminar
-        let relEl = await this.prod_has_extras.findOne({
+        const relEl = await this.prod_has_extras.findOne({
           where: {
             producto_id: producto,
             extra_id: producto.prod_has_extra_id[j].extra_id,
@@ -258,7 +271,7 @@ export class ProductosService {
       relacionesEliminar = prodDto.ingredientes.length; //Contabiliza las relaciones a eliminar
       i = 0;
 
-      for (let ingr of prodDto.ingredientes) {
+      for (const ingr of prodDto.ingredientes) {
         producto.prod_has_ingr_id[i].ingrediente_id = ingr;
         i++;
         relacionesEliminar--;
@@ -266,7 +279,7 @@ export class ProductosService {
 
       for (let j = 0; j < relacionesEliminar; j++) {
         //Busca una relación posible a eliminar
-        let relEl = await this.prod_has_ingr.findOne({
+        const relEl = await this.prod_has_ingr.findOne({
           where: {
             producto_id: producto,
             ingrediente_id: producto.prod_has_ingr_id[j].ingrediente_id,
@@ -280,7 +293,7 @@ export class ProductosService {
       relacionesEliminar = prodDto.opciones.length; //Contabiliza las relaciones a eliminar
       i = 0;
 
-      for (let opc of prodDto.opciones) {
+      for (const opc of prodDto.opciones) {
         producto.prod_has_opc_id[i].opcion_id = opc;
         i++;
         relacionesEliminar--;
@@ -288,7 +301,7 @@ export class ProductosService {
 
       for (let j = 0; j < relacionesEliminar; j++) {
         //Busca una relación posible a eliminar
-        let relEl = await this.prod_has_opc.findOne({
+        const relEl = await this.prod_has_opc.findOne({
           where: {
             producto_id: producto,
             opcion_id: producto.prod_has_opc_id[j].opcion_id,
@@ -299,7 +312,7 @@ export class ProductosService {
         }
       }
 
-      return await this.productosRepository.update(id_producto, producto);
+      return await this.productosRepository.update(id_prod, producto);
     } catch (error) {
       console.error(error);
       throw new HttpException(
@@ -309,10 +322,10 @@ export class ProductosService {
     }
   }
 
-  async delProducto(id_producto: number) {
+  async delProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
-        where: { id_producto: id_producto },
+        where: { id_prod: id_prod },
       });
       const p_h_e = await this.prod_has_extras.find({
         where: { producto_id: producto },
@@ -324,13 +337,13 @@ export class ProductosService {
         where: { producto_id: producto },
       });
 
-      for (let phe of p_h_e) {
+      for (const phe of p_h_e) {
         await this.prod_has_extras.delete(phe.producto_extra_id);
       }
-      for (let phi of p_h_i) {
+      for (const phi of p_h_i) {
         await this.prod_has_ingr.delete(phi.prod_ingr_id);
       }
-      for (let opc of p_h_o) {
+      for (const opc of p_h_o) {
         await this.prod_has_ingr.delete(opc.producto_opc_id);
       }
 

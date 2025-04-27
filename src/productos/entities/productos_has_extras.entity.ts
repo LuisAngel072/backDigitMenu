@@ -1,4 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Productos } from './productos.entity';
 import { Extras } from 'src/extras/entities/extras.entity';
 
@@ -11,11 +17,11 @@ export class Productos_has_extras {
   producto_extra_id: number;
 
   @ManyToOne(() => Productos, (producto) => producto.prod_has_extra_id)
-  @JoinColumn({name:'producto_id'})
+  @JoinColumn({ name: 'producto_id' })
   producto_id: Productos;
 
   @ManyToOne(() => Extras, (extra) => extra.prod_has_extra_id)
-  @JoinColumn({name:'extra_id'})
+  @JoinColumn({ name: 'extra_id' })
   extra_id: Extras;
 
   @Column({ name: 'precio', type: 'decimal', precision: 5, scale: 2 })
