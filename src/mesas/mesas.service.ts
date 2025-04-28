@@ -1,6 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+// src/mesas/mesas.service.ts
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CreateMesaDto } from './dto/create-mesa.dto';
+import { Mesa } from './entities/mesa.entity';
 import * as mysql from 'mysql2/promise';
 
 @Injectable()
@@ -9,12 +11,11 @@ export class MesasService {
 
   constructor(private configService: ConfigService) {
     const host = this.configService.get<string>('DB_HOST');
-    const user = this.configService.get<string>('DB_USERNAME'); // 👈 o usa 'DB_USER' si cambias el .env
+    const user = this.configService.get<string>('DB_USERNAME');
     const password = this.configService.get<string>('DB_PASSWORD');
     const database = this.configService.get<string>('DB_NAME');
     const port = this.configService.get<number>('DB_PORT') || 3306;
 
-    // Log para validar que los valores sí están cargando
     console.log('🔌 Conectando a DB con:', { host, user, database, port });
 
     this.pool = mysql.createPool({
@@ -26,6 +27,35 @@ export class MesasService {
       waitForConnections: true,
       connectionLimit: 10,
     });
+  }
+
+  async findAll(): Promise<Mesa[]> {
+    try {
+      const [rows] = await this.pool.query('SELECT * FROM mesas ORDER BY no_mesa');
+      return rows as Mesa[];
+    } catch (err) {
+      console.error('❌ Error al consultar todas las mesas:', err);
+      throw new InternalServerErrorException('No se pudieron obtener las mesas');
+    }
+  }
+
+  async findOne(no_mesa: number): Promise<Mesa | null> {
+    try {
+      const [rows] = await this.pool.query(
+        'SELECT * FROM mesas WHERE no_mesa = ?',
+        [no_mesa]
+      );
+      
+      const mesasArray = rows as Mesa[];
+      if (mesasArray.length === 0) {
+        return null;
+      }
+      
+      return mesasArray[0];
+    } catch (err) {
+      console.error(`❌ Error al buscar mesa ${no_mesa}:`, err);
+      throw new InternalServerErrorException(`Error al buscar la mesa ${no_mesa}`);
+    }
   }
 
   async create(createMesaDto: CreateMesaDto) {
@@ -51,7 +81,7 @@ export class MesasService {
       );
 
       if ((result as any).affectedRows === 0) {
-        throw new Error(`No se encontró la mesa con número ${no_mesa}`);
+        throw new NotFoundException(`No se encontró la mesa con número ${no_mesa}`);
       }
 
       return { message: 'Mesa eliminada correctamente' };
