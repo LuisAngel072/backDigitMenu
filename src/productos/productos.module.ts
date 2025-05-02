@@ -6,6 +6,7 @@ import { Productos } from './entities/productos.entity';
 import { Productos_has_extras } from './entities/productos_has_extras.entity';
 import { Productos_has_ingredientes } from './entities/productos_has_ingredientes.entity';
 import { Productos_has_opciones } from './entities/productos_has_opciones.entity';
+import { Sub_categorias } from 'src/sub-categorias/entities/sub_categorias.entity';
 
 @Module({
   controllers: [ProductosController],
@@ -16,6 +17,7 @@ import { Productos_has_opciones } from './entities/productos_has_opciones.entity
       Productos_has_extras,
       Productos_has_ingredientes,
       Productos_has_opciones,
+      Sub_categorias,
     ]),
   ],
 })
