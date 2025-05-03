@@ -34,7 +34,7 @@ export class MesasService {
     try {
       const [result] = await this.pool.query(
         'INSERT INTO mesas (no_mesa, qr_code_url) VALUES (?, ?)',
-        [no_mesa, qr_code_url]
+        [no_mesa, qr_code_url],
       );
       return { message: 'Mesa insertada correctamente', result };
     } catch (err) {
@@ -47,7 +47,7 @@ export class MesasService {
     try {
       const [result] = await this.pool.query(
         'DELETE FROM mesas WHERE no_mesa = ?',
-        [no_mesa]
+        [no_mesa],
       );
 
       if ((result as any).affectedRows === 0) {
