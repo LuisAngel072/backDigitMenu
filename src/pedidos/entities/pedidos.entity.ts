@@ -9,6 +9,11 @@ import {
 } from 'typeorm';
 import { Pedidos_has_productos } from './pedidos_has_productos.entity';
 
+export enum EstadoPedido {
+  iniciado = 'Iniciado',
+  pagado = 'Pagado',
+}
+
 @Entity({ name: 'pedidos' })
 export class Pedidos {
   @PrimaryGeneratedColumn({ name: 'id_pedido', type: 'int' })
@@ -33,6 +38,14 @@ export class Pedidos {
     nullable: true,
   })
   total: number;
+
+  @Column({
+    name: 'estado',
+    type: 'enum',
+    nullable: false,
+    default: EstadoPedido.iniciado,
+  })
+  estado: EstadoPedido;
 
   @OneToMany(() => Pedidos_has_productos, (p_h_p) => p_h_p.pedido_id)
   p_h_p: Pedidos_has_productos;

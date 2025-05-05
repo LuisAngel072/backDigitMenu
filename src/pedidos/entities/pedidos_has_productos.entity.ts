@@ -12,6 +12,13 @@ import { Opciones } from 'src/opciones/entities/opciones.entity';
 import { Pedidos_has_extrassel } from './pedidos_has_extrasSel.entity';
 import { Pedidos_has_ingrsel } from './pedidos_has_ingrSel.entity';
 
+export enum EstadoPedidoHasProductos {
+  sin_preparar = 'Sin preparar',
+  preparado = 'Preparado',
+  entregado = 'Entregado',
+  pagado = 'Pagado',
+}
+
 @Entity({ name: 'pedidos_has_productos' })
 export class Pedidos_has_productos {
   @PrimaryGeneratedColumn({ name: 'pedido_prod_id', type: 'int' })
@@ -25,8 +32,13 @@ export class Pedidos_has_productos {
   @JoinColumn({ name: 'producto_id' })
   producto_id: Productos;
 
-  @Column({ name: 'estado', type: 'enum', nullable: false })
-  estado: EstadoPedido;
+  @Column({
+    name: 'estado',
+    type: 'enum',
+    nullable: false,
+    default: EstadoPedidoHasProductos.sin_preparar,
+  })
+  estado: EstadoPedidoHasProductos;
 
   //Almacena el precio en el que se compro un producto en ese momento
   @Column({ name: 'precio', type: 'decimal', precision: 7, scale: 2 })
@@ -41,11 +53,4 @@ export class Pedidos_has_productos {
 
   @OneToMany(() => Pedidos_has_ingrsel, (p_h_is) => p_h_is.pedido_ingr_id)
   p_h_is: Pedidos_has_ingrsel;
-}
-
-export enum EstadoPedido {
-  sin_preparar = 'Sin preparar',
-  preparado = 'Preparado',
-  entregado = 'Entregado',
-  pagado = 'Pagado',
 }
