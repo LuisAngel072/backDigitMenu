@@ -1,16 +1,10 @@
 // src/mesas/mesa.entity.ts
+import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany } from 'typeorm';
 import { Pedidos } from 'src/pedidos/entities/pedidos.entity';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  Unique,
-  OneToMany,
-} from 'typeorm';
 
 @Entity('mesas')
 @Unique(['no_mesa']) // para reflejar que es único como en tu DB
-export class Mesas {
+export class Mesa {
   @PrimaryGeneratedColumn({ name: 'id_mesa', type: 'smallint', unsigned: true })
   id_mesa: number;
 

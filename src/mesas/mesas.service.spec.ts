@@ -2,17 +2,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Mesas } from './entities/mesa.entity';
+import { Mesa } from './entities/mesa.entity';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 
 @Injectable()
 export class MesasService {
   constructor(
-    @InjectRepository(Mesas)
-    private readonly mesaRepository: Repository<Mesas>,
+    @InjectRepository(Mesa)
+    private readonly mesaRepository: Repository<Mesa>,
   ) {}
 
-  async create(dto: CreateMesaDto): Promise<Mesas> {
+  async create(dto: CreateMesaDto): Promise<Mesa> {
     const nuevaMesa = this.mesaRepository.create(dto);
     return this.mesaRepository.save(nuevaMesa); // Maneja errores únicos si quieres
   }
