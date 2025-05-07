@@ -13,8 +13,10 @@ async function bootstrap() {
   });
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('api');
-  app.useStaticAssets(join(__dirname, '..', 'uploads') ,{ prefix: '/uploads/' });
- 
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
+
   await app.listen(3000);
 }
 bootstrap();

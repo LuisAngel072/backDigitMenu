@@ -10,6 +10,7 @@ import {
 import { Productos_has_extras } from './productos_has_extras.entity';
 import { Productos_has_ingredientes } from './productos_has_ingredientes.entity';
 import { Productos_has_opciones } from './productos_has_opciones.entity';
+import { Pedidos_has_productos } from 'src/pedidos/entities/pedidos_has_productos.entity';
 
 @Entity({ name: 'productos' })
 export class Productos {
@@ -52,4 +53,7 @@ export class Productos {
   @ManyToOne(() => Sub_categorias, (sub_cat) => sub_cat.producto)
   @JoinColumn({ name: 'sub_cat_id' })
   sub_cat_id: Sub_categorias;
+
+  @OneToMany(() => Pedidos_has_productos, (p_h_p) => p_h_p.producto_id)
+  p_h_p: Pedidos_has_productos;
 }

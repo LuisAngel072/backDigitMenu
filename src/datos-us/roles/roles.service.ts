@@ -4,7 +4,6 @@ import { Roles } from './entities/roles.entity';
 import { Repository } from 'typeorm';
 import { Usuarios } from 'src/usuarios/entities/usuarios.entity';
 import { UsuariosHasRoles } from './entities/usuarios_has_roles.entity';
-import { CreateUsHRolDTO } from './dtos/cr_usHrol.dto';
 
 @Injectable()
 export class RolesService {
@@ -25,8 +24,9 @@ export class RolesService {
       console.error('Error al obtener roles:', error);
       throw new HttpException(
         error.message || 'Error interno al obtener roles',
-        HttpStatus.INTERNAL_SERVER_ERROR,)
-    }    
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async asignarRolAUsuario(id_usuario: number, rol: string) {
@@ -89,7 +89,7 @@ export class RolesService {
       if (!usF) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
       }
-  
+
       // Obtener el registro en la tabla de relación para ese usuario
       const usHrolF = await this.usHrolRepository.find({
         where: { usuario_id: usF },
@@ -101,7 +101,7 @@ export class RolesService {
           HttpStatus.NOT_FOUND,
         );
       }
-  
+
       // Obtener la entidad Roles completa usando el valor recibido
       const rolEntity = await this.rolesRepository.findOne({
         where: { rol: rol_id.rol },
@@ -109,7 +109,7 @@ export class RolesService {
       if (!rolEntity) {
         throw new HttpException('Rol no encontrado', HttpStatus.NOT_FOUND);
       }
-  
+
       // Actualizar el registro de la relación con la entidad completa
       usHrolF[0].rol_id = rolEntity;
       await this.usHrolRepository.save(usHrolF[0]);
@@ -122,8 +122,6 @@ export class RolesService {
       );
     }
   }
-  
-  
 
   async obtenerUsuariosYRoles() {
     try {
@@ -136,7 +134,7 @@ export class RolesService {
           'usuario_id.rfc',
           'usuario_id.email_id',
           'usuario_id.telefono_id',
-          'usuario_id.img_perfil'
+          'usuario_id.img_perfil',
         ],
       });
       if (!usFHrol) {
