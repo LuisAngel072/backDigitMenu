@@ -169,8 +169,8 @@ export class PedidosService {
     p_h_prDTO: CrPedidosHasProductosDTO,
   ): Promise<Pedidos_has_productos> {
     try {
-      let extras: Extras[] | null;
-      let ingrs: Ingredientes[] | null;
+      const extras: Extras[] = [];
+      const ingrs: Ingredientes[] = [];
 
       const pedidoF = await this.pedidosRepository.findOne({
         where: { id_pedido: p_h_prDTO.pedido_id },
@@ -211,7 +211,7 @@ export class PedidosService {
       const p_h_prC = await this.p_h_prRepository.create(body);
       const p_h_prS = await this.p_h_prRepository.save(p_h_prC);
 
-      if (p_h_prDTO.extras) {
+      if (p_h_prDTO.extras.length > 0) {
         for (const p_h_extra of p_h_prDTO.extras) {
           const extraF = await this.extrasRepository.findOne({
             where: { id_extra: p_h_extra },
@@ -235,7 +235,7 @@ export class PedidosService {
         }
       }
 
-      if (p_h_prDTO.ingr) {
+      if (p_h_prDTO.ingr.length > 0) {
         for (const p_h_ingr of p_h_prDTO.ingr) {
           const ingrF = await this.ingrRepository.findOne({
             where: { id_ingr: p_h_ingr },
@@ -251,7 +251,7 @@ export class PedidosService {
 
         for (const ingr of ingrs) {
           const body = {
-            pedido_producto_id: p_h_prS,
+            pedido_prod_id: p_h_prS,
             ingrediente_id: ingr,
             precio: ingr.precio,
           };

@@ -10,6 +10,7 @@ import { Mesas } from 'src/mesas/entities/mesa.entity';
 import { Opciones } from 'src/opciones/entities/opciones.entity';
 import { Ingredientes } from 'src/ingredientes/entities/ingredientes.entity';
 import { Extras } from 'src/extras/entities/extras.entity';
+import { Pedidos_has_productos } from './entities/pedidos_has_productos.entity';
 
 @Module({
   controllers: [PedidosController],
@@ -19,6 +20,7 @@ import { Extras } from 'src/extras/entities/extras.entity';
       Pedidos,
       Pedidos_has_extrassel,
       Pedidos_has_ingrsel,
+      Pedidos_has_productos,
       Productos,
       Mesas,
       Opciones,

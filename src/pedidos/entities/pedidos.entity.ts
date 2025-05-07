@@ -20,13 +20,13 @@ export class Pedidos {
   id_pedido: number;
 
   @ManyToOne(() => Mesas, (mesas) => mesas.pedidos)
-  @JoinColumn({ name: 'no_mesa' })
+  @JoinColumn({ name: 'no_mesa', referencedColumnName: 'no_mesa' })
   no_mesa: Mesas;
 
   @Column({
     name: 'fecha_pedido',
     type: 'datetime',
-    default: 'CURRENT_TIMESTAMP',
+    default: () => 'NOW()',
   })
   fecha_pedido: Date;
 
@@ -42,6 +42,7 @@ export class Pedidos {
   @Column({
     name: 'estado',
     type: 'enum',
+    enum: EstadoPedido,
     nullable: false,
     default: EstadoPedido.iniciado,
   })

@@ -35,6 +35,7 @@ export class Pedidos_has_productos {
   @Column({
     name: 'estado',
     type: 'enum',
+    enum: EstadoPedidoHasProductos,
     nullable: false,
     default: EstadoPedidoHasProductos.sin_preparar,
   })
