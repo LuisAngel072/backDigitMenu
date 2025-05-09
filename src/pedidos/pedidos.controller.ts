@@ -29,6 +29,13 @@ export class PedidosController {
     return await this.pedidosService.getProductosPedido(id_pedido);
   }
 
+  @Get('/productos/:p_h_pr_id')
+  async getProductosExtrasIngrSel(
+    @Param('p_h_pr_id', ParseIntPipe) p_h_pr_id: number,
+  ) {
+    return await this.pedidosService.getExtrasIngrDeProducto(p_h_pr_id);
+  }
+
   @Post('registrar')
   async crearPedido(@Body() pedidoDTO: CrPedidoDto) {
     return await this.pedidosService.crearPedido(pedidoDTO);

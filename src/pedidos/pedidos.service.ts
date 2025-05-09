@@ -16,6 +16,7 @@ import { Productos } from 'src/productos/entities/productos.entity';
 import { Extras } from 'src/extras/entities/extras.entity';
 import { Ingredientes } from 'src/ingredientes/entities/ingredientes.entity';
 import { Opciones } from 'src/opciones/entities/opciones.entity';
+import { Producto_extras_ingrSel } from './interfaces/producto_extras_ingr_sel.type';
 
 @Injectable()
 export class PedidosService {
@@ -75,6 +76,7 @@ export class PedidosService {
       }
       const p_h_pr = await this.p_h_prRepository.find({
         where: { pedido_id: pedido },
+        relations: ['opcion_id'],
       });
       if (!p_h_pr || p_h_pr.length === 0) {
         throw new HttpException(
@@ -82,10 +84,55 @@ export class PedidosService {
           HttpStatus.NOT_FOUND,
         );
       }
+
       return p_h_pr;
     } catch (error) {
       throw new HttpException(
         `Ocurrió un error al intentar obtener los productos del pedido: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Obtiene todos los datos que tiene un producto en un pedido y los elementos necesarios
+   * para su preparación, como los extras, opcion e ingredientes, revise la interfaz producto_extras_ingr_sel
+   * que están tanto en el front como en el back.
+   * @param p_h_pr_id Llave primaria del registro de la tabla pedidos_has_productos NO id_producto
+   * @returns Producto_extras_ingrSel
+   */
+  async getExtrasIngrDeProducto(
+    p_h_pr_id: number,
+  ): Promise<Producto_extras_ingrSel> {
+    try {
+      const p_h_prF = await this.p_h_prRepository.findOne({
+        where: { pedido_prod_id: p_h_pr_id },
+        relations: ['opcion_id'],
+      });
+      const extrasSel = await this.p_h_exsRepository.find({
+        where: { pedido_prod_id: p_h_prF },
+      });
+      const ingrSel = await this.p_h_ingrsRepository.find({
+        where: { pedido_prod_id: p_h_prF },
+      });
+      const extras: Extras[] = extrasSel.map((extra) => extra.extra_id);
+      const ingredientes: Ingredientes[] = ingrSel.map(
+        (ingrediente) => ingrediente.ingrediente_id,
+      );
+      const body: Producto_extras_ingrSel = {
+        pedido_id: p_h_prF.pedido_id,
+        producto_id: p_h_prF.producto_id,
+        opcion_id: p_h_prF.opcion_id,
+        estado: p_h_prF.estado,
+        precio: p_h_prF.precio,
+        extras: extras,
+        ingredientes: ingredientes,
+      };
+
+      return body;
+    } catch (error) {
+      throw new HttpException(
+        `Ocurrió un error al intentar obtener los datos del producto sobre el pedido: ${error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
