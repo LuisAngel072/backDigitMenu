@@ -29,7 +29,7 @@ export class PedidosController {
     return await this.pedidosService.getProductosPedido(id_pedido);
   }
 
-  @Get('/productos/:p_h_pr_id')
+  @Get('/productos/extrasIngrs/:p_h_pr_id')
   async getProductosExtrasIngrSel(
     @Param('p_h_pr_id', ParseIntPipe) p_h_pr_id: number,
   ) {

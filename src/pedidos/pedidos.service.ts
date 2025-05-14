@@ -105,16 +105,31 @@ export class PedidosService {
     p_h_pr_id: number,
   ): Promise<Producto_extras_ingrSel> {
     try {
-      const p_h_prF = await this.p_h_prRepository.findOne({
-        where: { pedido_prod_id: p_h_pr_id },
-        relations: ['opcion_id'],
-      });
-      const extrasSel = await this.p_h_exsRepository.find({
-        where: { pedido_prod_id: p_h_prF },
-      });
-      const ingrSel = await this.p_h_ingrsRepository.find({
-        where: { pedido_prod_id: p_h_prF },
-      });
+      const p_h_prF: Pedidos_has_productos =
+        await this.p_h_prRepository.findOne({
+          where: { pedido_prod_id: p_h_pr_id },
+          relations: ['opcion_id'],
+        });
+      if (!p_h_prF) {
+        throw new HttpException(
+          'Producto en pedido no encontrado',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const extrasSel = await this.p_h_exsRepository
+        .createQueryBuilder('e')
+        .leftJoinAndSelect('e.extra_id', 'extra')
+        .where('e.pedido_prod_id = :id', { id: p_h_pr_id })
+        .getMany();
+
+      const ingrSel = await this.p_h_ingrsRepository
+        .createQueryBuilder('i')
+        .leftJoinAndSelect('i.ingrediente_id', 'ingrediente')
+        .where('i.pedido_prod_id = :id', { id: p_h_pr_id })
+        .getMany();
+
+      console.log(extrasSel);
+      console.log(ingrSel);
       const extras: Extras[] = extrasSel.map((extra) => extra.extra_id);
       const ingredientes: Ingredientes[] = ingrSel.map(
         (ingrediente) => ingrediente.ingrediente_id,
