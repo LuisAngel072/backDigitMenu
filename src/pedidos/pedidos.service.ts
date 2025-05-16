@@ -43,7 +43,9 @@ export class PedidosService {
 
   async getPedidos(): Promise<Pedidos[]> {
     try {
-      const pedidosF = await this.pedidosRepository.find();
+      const pedidosF = await this.pedidosRepository.find({
+        relations: ['no_mesa'],
+      });
 
       if (!pedidosF || pedidosF.length === 0) {
         throw new HttpException(
@@ -76,7 +78,7 @@ export class PedidosService {
       }
       const p_h_pr = await this.p_h_prRepository.find({
         where: { pedido_id: pedido },
-        relations: ['opcion_id'],
+        relations: ['opcion_id', 'pedido_id.no_mesa'],
       });
       if (!p_h_pr || p_h_pr.length === 0) {
         throw new HttpException(
