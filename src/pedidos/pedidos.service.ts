@@ -108,7 +108,7 @@ export class PedidosService {
       const p_h_prF: Pedidos_has_productos =
         await this.p_h_prRepository.findOne({
           where: { pedido_prod_id: p_h_pr_id },
-          relations: ['opcion_id'],
+          relations: ['opcion_id', 'producto_id', 'pedido_id'],
         });
       if (!p_h_prF) {
         throw new HttpException(
