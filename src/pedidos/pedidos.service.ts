@@ -9,7 +9,7 @@ import {
 import { Pedidos_has_extrassel } from './entities/pedidos_has_extrasSel.entity';
 import { Pedidos_has_ingrsel } from './entities/pedidos_has_ingrSel.entity';
 import { CrPedidoDto } from './dtos/cr-pedido.dto';
-import { Mesas } from 'src/mesas/entities/mesa.entity';
+import { Mesa } from 'src/mesas/entities/mesa.entity';
 import { UpPedidoDto } from './dtos/up-pedido.dto';
 import { CrPedidosHasProductosDTO } from './dtos/cr-pedidos_has_productos.dto';
 import { Productos } from 'src/productos/entities/productos.entity';
@@ -31,8 +31,8 @@ export class PedidosService {
     private readonly p_h_ingrsRepository: Repository<Pedidos_has_ingrsel>,
     @InjectRepository(Productos)
     private readonly productosRepository: Repository<Productos>,
-    @InjectRepository(Mesas)
-    private readonly mesasRepository: Repository<Mesas>,
+    @InjectRepository(Mesa)
+    private readonly mesasRepository: Repository<Mesa>,
     @InjectRepository(Extras)
     private readonly extrasRepository: Repository<Extras>,
     @InjectRepository(Ingredientes)

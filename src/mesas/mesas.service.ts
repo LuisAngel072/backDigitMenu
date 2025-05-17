@@ -1,63 +1,62 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+// src/mesas/mesas.service.ts
+import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Mesa } from './entities/mesa.entity';
 import { CreateMesaDto } from './dto/create-mesa.dto';
-import * as mysql from 'mysql2/promise';
 
 @Injectable()
 export class MesasService {
-  private pool: mysql.Pool;
+  constructor(
+    @InjectRepository(Mesa)
+    private readonly mesasRepository: Repository<Mesa>,
+  ) {}
 
-  constructor(private configService: ConfigService) {
-    const host = this.configService.get<string>('DB_HOST');
-    const user = this.configService.get<string>('DB_USERNAME'); // 👈 o usa 'DB_USER' si cambias el .env
-    const password = this.configService.get<string>('DB_PASSWORD');
-    const database = this.configService.get<string>('DB_NAME');
-    const port = this.configService.get<number>('DB_PORT') || 3306;
+  async findAll(): Promise<Mesa[]> {
+    try {
+      return await this.mesasRepository.find({
+        order: { no_mesa: 'ASC' },
+      });
+    } catch (error) {
+      console.error('❌ Error al obtener todas las mesas:', error);
+      throw new HttpException('No se pudieron obtener las mesas', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
-    // Log para validar que los valores sí están cargando
-    console.log('🔌 Conectando a DB con:', { host, user, database, port });
-
-    this.pool = mysql.createPool({
-      host,
-      user,
-      password,
-      database,
-      port,
-      waitForConnections: true,
-      connectionLimit: 10,
-    });
+  async findOne(no_mesa: number): Promise<Mesa | null> {
+    try {
+      const mesa = await this.mesasRepository.findOne({ where: { no_mesa } });
+      return mesa || null;
+    } catch (error) {
+      console.error(`❌ Error al buscar la mesa ${no_mesa}:`, error);
+      throw new HttpException('Error al buscar la mesa', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async create(createMesaDto: CreateMesaDto) {
-    const { no_mesa, qr_code_url } = createMesaDto;
-
     try {
-      const [result] = await this.pool.query(
-        'INSERT INTO mesas (no_mesa, qr_code_url) VALUES (?, ?)',
-        [no_mesa, qr_code_url],
-      );
+      const nuevaMesa = this.mesasRepository.create(createMesaDto);
+      const result = await this.mesasRepository.save(nuevaMesa);
       return { message: 'Mesa insertada correctamente', result };
-    } catch (err) {
-      console.error('❌ Error real al insertar mesa:', err);
-      throw new InternalServerErrorException('No se pudo insertar la mesa');
+    } catch (error) {
+      console.error('❌ Error al insertar la mesa:', error);
+      throw new HttpException('No se pudo insertar la mesa', HttpStatus.BAD_REQUEST);
     }
   }
 
   async remove(no_mesa: number) {
     try {
-      const [result] = await this.pool.query(
-        'DELETE FROM mesas WHERE no_mesa = ?',
-        [no_mesa],
-      );
+      const mesa = await this.findOne(no_mesa);
 
-      if ((result as any).affectedRows === 0) {
-        throw new Error(`No se encontró la mesa con número ${no_mesa}`);
+      if (!mesa) {
+        throw new NotFoundException(`No se encontró la mesa con número ${no_mesa}`);
       }
 
+      await this.mesasRepository.remove(mesa);
       return { message: 'Mesa eliminada correctamente' };
-    } catch (err) {
-      console.error('❌ Error al eliminar mesa:', err);
-      throw new InternalServerErrorException('No se pudo eliminar la mesa');
+    } catch (error) {
+      console.error('❌ Error al eliminar la mesa:', error);
+      throw new HttpException('No se pudo eliminar la mesa', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

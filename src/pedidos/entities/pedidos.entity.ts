@@ -1,4 +1,4 @@
-import { Mesas } from 'src/mesas/entities/mesa.entity';
+import { Mesa } from 'src/mesas/entities/mesa.entity';
 import {
   Column,
   Entity,
@@ -19,9 +19,9 @@ export class Pedidos {
   @PrimaryGeneratedColumn({ name: 'id_pedido', type: 'int' })
   id_pedido: number;
 
-  @ManyToOne(() => Mesas, (mesas) => mesas.pedidos)
+  @ManyToOne(() => Mesa, (mesas) => mesas.pedidos)
   @JoinColumn({ name: 'no_mesa', referencedColumnName: 'no_mesa' })
-  no_mesa: Mesas;
+  no_mesa: Mesa;
 
   @Column({
     name: 'fecha_pedido',
