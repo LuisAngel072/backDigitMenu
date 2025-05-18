@@ -11,8 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { SubCategoriasService } from './sub-categorias.service';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { Roles_validos } from 'src/usuarios/interfaces/roles_validos.enum';
+// import { Auth } from 'src/auth/decorators/auth.decorator'; // Eliminado
 import { CrSubCategoriasDTO } from './dtos/cr-sub_cat.dto';
 import { UpSubCatDTO } from './dtos/up-sub_cat.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -24,23 +23,11 @@ export class SubCategoriasController {
   constructor(private readonly subCatService: SubCategoriasService) {}
 
   @Get()
-  @Auth(
-    Roles_validos.admin,
-    Roles_validos.cajero,
-    Roles_validos.cocinero,
-    Roles_validos.mesero,
-  )
   async obtenerSubCategorias() {
     return await this.subCatService.getSubCategorias();
   }
 
   @Get(':id_subcat')
-  @Auth(
-    Roles_validos.admin,
-    Roles_validos.cajero,
-    Roles_validos.cocinero,
-    Roles_validos.mesero,
-  )
   async obtenerSubCategoria(
     @Param('id_subcat', ParseIntPipe) id_subcat: number,
   ) {
@@ -48,13 +35,11 @@ export class SubCategoriasController {
   }
 
   @Post('registrar')
-  @Auth(Roles_validos.admin)
   async registarSubCategoria(@Body() subCatDto: CrSubCategoriasDTO) {
     return await this.subCatService.crSubCat(subCatDto);
   }
 
   @Patch('editar/:id_subcat')
-  @Auth(Roles_validos.admin)
   async editarSubcategoria(
     @Param('id_subcat', ParseIntPipe) id_subcat: number,
     @Body() upSubCatDTO: UpSubCatDTO,
@@ -63,7 +48,6 @@ export class SubCategoriasController {
   }
 
   @Delete('eliminar/:id_subcat')
-  @Auth(Roles_validos.admin)
   async eliminarSubcategoria(
     @Param('id_subcat', ParseIntPipe) id_subcat: number,
   ) {
@@ -85,7 +69,6 @@ export class SubCategoriasController {
     }),
   )
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    // Aquí, puedes retornar el nombre del archivo o la ruta relativa
     return { ruta_img: file.filename };
   }
 }
