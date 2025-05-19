@@ -13,18 +13,19 @@ import { RolesModule } from 'src/datos-us/roles/roles.module';
     forwardRef(() => UsuariosModule),
     forwardRef(() => RolesModule),
     PassportModule.register({
-      defaultStrategy: 'jwt'
+      defaultStrategy: 'jwt',
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       useFactory: async (configService: ConfigService) => ({
         secret: process.env.JWT_SECRET,
-        signOptions: { expiresIn: '4h' },
+        signOptions: { expiresIn: '8h' },
       }),
     }),
   ],
-  providers: [AuthService,JwtStrategy],
+  providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
   exports: [AuthService, PassportModule],
 })

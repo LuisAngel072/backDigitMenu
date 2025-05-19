@@ -186,10 +186,11 @@ export class PedidosService {
   }
   /**
    * Esta función será utilizada en dos casos:
-   * Cuando el usuario comience agregar productos en el pedido, presionando el botón de
-   * "Finalizar pedido", actualizando el total según los productos con los extras, opciones
+   * 1.- Cuando el usuario comience agregar productos en el pedido, presionando el botón de
+   * "Finalizar pedido" o "Agregar al pedido",
+   * actualizando el total según los productos con los extras, opciones
    * e ingredientes seleccionados.
-   * Cuando el usuario pague la cuenta y este pedido sea marcado como pagado.
+   * 2.- Cuando el usuario pague la cuenta y este pedido sea marcado como pagado.
    * @param id_pedido Llave primaria del pedido a actualizar
    * @param pedidoDTO Precio total de pedido de la mesa y/o cambio de estado de iniciado a pagado
    * @returns pedido actualizado

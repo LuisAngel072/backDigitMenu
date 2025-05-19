@@ -11,7 +11,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { SubCategoriasService } from './sub-categorias.service';
-// import { Auth } from 'src/auth/decorators/auth.decorator'; // Eliminado
 import { CrSubCategoriasDTO } from './dtos/cr-sub_cat.dto';
 import { UpSubCatDTO } from './dtos/up-sub_cat.dto';
 import { FileInterceptor } from '@nestjs/platform-express';

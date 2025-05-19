@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsuariosService } from 'src/usuarios/usuarios.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -13,7 +18,12 @@ export class AuthService {
 
   async validarUsuario(codigo: string, contrasena: string) {
     const usuario = await this.usuariosService.encontrarUnUsuario(codigo);
-
+    if (!usuario) {
+      throw new HttpException(
+        `El usuario con código ${codigo} no existe`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
     if (usuario.activo) {
       const contrasenaValida = await bcrypt.compare(
         contrasena,
@@ -30,6 +40,7 @@ export class AuthService {
       }
 
       if (contrasenaValida) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { contrasena, ...result } = usuario; // Excluye la contraseña del objeto de retorno
         return result;
       }

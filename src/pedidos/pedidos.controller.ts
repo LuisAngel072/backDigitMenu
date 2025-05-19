@@ -54,7 +54,7 @@ export class PedidosController {
     return await this.pedidosService.upPedido(id_pedido, pedidoDTO);
   }
 
-  @Patch('actualizar/:pedido_prod_id')
+  @Patch('actualizar/pedido_prod/:pedido_prod_id')
   async cambiarEstado(
     @Param('pedido_prod_id', ParseIntPipe) pedido_prod_id: number,
     @Body() estado: EstadoPedidoHasProductos,
