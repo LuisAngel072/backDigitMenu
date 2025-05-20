@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Pedidos } from './entities/pedidos.entity';
+import { EstadoPedido, Pedidos } from './entities/pedidos.entity';
 import { Repository, UpdateResult } from 'typeorm';
 import {
   EstadoPedidoHasProductos,
@@ -58,6 +58,33 @@ export class PedidosService {
     } catch (error) {
       throw new HttpException(
         `Ocurrió un error al intentar obtener los pedidos: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  /**
+   * Obtiene el pedido iniciado del momento según el número de mesa
+   * que se esté buscando. Esta función será utilizada para determinar
+   * si existe ya un pedido iniciado para añadir productos, de lo contrario,
+   * crear un pedido con el número de mesa.
+   * @param no_mesa Número de mesa donde se accede al menú
+   * @returns Pedido encontrado
+   */
+  async getPedidoIniciadoByNoMesa(no_mesa: number) {
+    try {
+      const pedidoF = await this.pedidosRepository.findOne({
+        where: { no_mesa: { id_mesa: no_mesa }, estado: EstadoPedido.iniciado },
+        relations: { no_mesa: true },
+      });
+
+      if (!pedidoF) {
+        return null; //No encontrado, no existe pedido iniciado
+      }
+
+      return pedidoF;
+    } catch (error) {
+      throw new HttpException(
+        `Ocurrió un error al intentar obtener el pedido ${no_mesa}: ${error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

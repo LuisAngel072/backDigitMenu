@@ -29,6 +29,13 @@ export class PedidosController {
     return await this.pedidosService.getProductosPedido(id_pedido);
   }
 
+  @Get('/no_mesa/:no_mesa')
+  async getPedidoIniciadoByNoMesa(
+    @Param('no_mesa', ParseIntPipe) no_mesa: number,
+  ) {
+    return await this.pedidosService.getPedidoIniciadoByNoMesa(no_mesa);
+  }
+
   @Get('/productos/extrasIngrs/:p_h_pr_id')
   async getProductosExtrasIngrSel(
     @Param('p_h_pr_id', ParseIntPipe) p_h_pr_id: number,
