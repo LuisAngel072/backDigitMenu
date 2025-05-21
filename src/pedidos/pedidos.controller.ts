@@ -53,19 +53,19 @@ export class PedidosController {
     return await this.pedidosService.addProductoAPedido(p_h_prDTO);
   }
 
+  @Patch('pedido_prod/actualizar/:pedido_prod_id')
+  async cambiarEstado(
+    @Param('pedido_prod_id', ParseIntPipe) pedido_prod_id: number,
+    @Body('estado') estado: EstadoPedidoHasProductos,
+  ) {
+    return await this.pedidosService.cambiarEstado(pedido_prod_id, estado);
+  }
+
   @Patch('actualizar/:id_pedido')
   async upPedido(
     @Param('id_pedido', ParseIntPipe) id_pedido: number,
     @Body() pedidoDTO: UpPedidoDto,
   ) {
     return await this.pedidosService.upPedido(id_pedido, pedidoDTO);
-  }
-
-  @Patch('actualizar/pedido_prod/:pedido_prod_id')
-  async cambiarEstado(
-    @Param('pedido_prod_id', ParseIntPipe) pedido_prod_id: number,
-    @Body() estado: EstadoPedidoHasProductos,
-  ) {
-    return await this.pedidosService.cambiarEstado(pedido_prod_id, estado);
   }
 }

@@ -162,13 +162,12 @@ export class PedidosService {
         .where('i.pedido_prod_id = :id', { id: p_h_pr_id })
         .getMany();
 
-      console.log(extrasSel);
-      console.log(ingrSel);
       const extras: Extras[] = extrasSel.map((extra) => extra.extra_id);
       const ingredientes: Ingredientes[] = ingrSel.map(
         (ingrediente) => ingrediente.ingrediente_id,
       );
       const body: Producto_extras_ingrSel = {
+        pedido_prod_id: p_h_prF.pedido_prod_id,
         pedido_id: p_h_prF.pedido_id,
         producto_id: p_h_prF.producto_id,
         opcion_id: p_h_prF.opcion_id,
@@ -382,7 +381,7 @@ export class PedidosService {
       const p_h_pr = await this.p_h_prRepository.findOne({
         where: { pedido_prod_id: pedido_prod_id },
       });
-
+      console.log(estado);
       if (!p_h_pr) {
         throw new HttpException(
           `No se encontró registro del producto en el pedido con id ${pedido_prod_id}`,

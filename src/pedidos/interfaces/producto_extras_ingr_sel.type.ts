@@ -6,6 +6,7 @@ import { Extras } from 'src/extras/entities/extras.entity';
 import { Ingredientes } from 'src/ingredientes/entities/ingredientes.entity';
 
 export type Producto_extras_ingrSel = {
+  pedido_prod_id: number;
   pedido_id: Pedidos;
   producto_id: Productos;
   estado: EstadoPedidoHasProductos;
