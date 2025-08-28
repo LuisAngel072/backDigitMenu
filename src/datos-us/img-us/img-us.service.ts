@@ -1,12 +1,5 @@
 import { promises as fs } from 'fs';
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  Post,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Img_us } from './entities/img_us.entity';
 import { Repository } from 'typeorm';
@@ -61,7 +54,9 @@ export class ImgUsService {
 
   async upImg(id_img: number, upImgDto: UpImgUsDTO) {
     try {
-      const imgF = await this.imgRepository.findOne({where:{id_img:id_img}});
+      const imgF = await this.imgRepository.findOne({
+        where: { id_img: id_img },
+      });
 
       // Consulta la imagen actual (la antigua)
       const previousImg = await this.imgRepository.findOne({
@@ -73,6 +68,7 @@ export class ImgUsService {
       // Guarda la ruta antigua para eliminarla después
       const previousImgRuta = previousImg.img_ruta;
       if (imgF) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const img = await this.imgRepository.update(id_img, upImgDto);
         const updatedImg = await this.imgRepository.findOne({
           where: { id_img },

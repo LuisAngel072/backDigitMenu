@@ -159,12 +159,15 @@ export class ProductosService {
         sub_cat_id: sub_cat_id,
       });
       const prodS = await this.productosRepository.save(prodEntity);
+      const prodGuardado = await this.productosRepository.findOne({
+        where: { id_prod: prodS.id_prod },
+      });
 
       // 2) Relación Extras
       if (prodDTO.extras) {
         for (const extra of prodDTO.extras) {
           const relExtra = this.prod_has_extras.create({
-            producto_id: prodS,
+            producto_id: prodGuardado,
             extra_id: extra,
             precio: extra.precio,
           });
@@ -176,7 +179,7 @@ export class ProductosService {
       if (prodDTO.ingredientes) {
         for (const ingr of prodDTO.ingredientes) {
           const relIngr = this.prod_has_ingr.create({
-            producto_id: prodS,
+            producto_id: prodGuardado,
             ingrediente_id: ingr,
             precio: ingr.precio,
           });
@@ -188,7 +191,7 @@ export class ProductosService {
       if (prodDTO.opciones) {
         for (const opc of prodDTO.opciones) {
           const relOpc = this.prod_has_opc.create({
-            producto_id: prodS,
+            producto_id: prodGuardado,
             opcion_id: opc,
             precio: opc.porcentaje,
           });
