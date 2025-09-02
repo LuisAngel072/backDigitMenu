@@ -1,5 +1,4 @@
-// src/notificaciones/dto/update-notificacion.dto.ts
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsNumber } from 'class-validator';
 
 export class UpdateNotificacionDto {
   @IsOptional()
@@ -7,5 +6,6 @@ export class UpdateNotificacionDto {
   estado?: string;
 
   @IsOptional()
+  @IsNumber()
   encargado_por?: number;
 }

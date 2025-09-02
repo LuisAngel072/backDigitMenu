@@ -2,6 +2,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { NotificacionesService } from './notificaciones.service';
 import { CreateNotificacionDto } from './dto/create-notificacion.dto';
+import { UpdateNotificacionDto } from './dto/update-notificacion.dto';
 
 @Controller('notificaciones')
 export class NotificacionesController {
@@ -21,8 +22,7 @@ export class NotificacionesController {
 
   // Mesero atiende notificación
   @Patch(':id/atender')
-  atender(@Param('id') id: number, @Req() req: any) {
-    const meseroId = req.user?.id || 0; // viene del JWT normalmente
-    return this.notificacionesService.atender(+id, meseroId);
+  atender(@Param('id') id: number, @Body() dto: UpdateNotificacionDto) {
+    return this.notificacionesService.atender(+id, dto);
   }
 }

@@ -28,12 +28,19 @@ export class NotificacionesService {
     });
   }
 
-  async atender(id: number, meseroId: number): Promise<Notificacion> {
+  async atender(id: number, dto: UpdateNotificacionDto): Promise<Notificacion> {
     const notif = await this.notifRepo.findOne({ where: { id_notf: id } });
     if (!notif) throw new NotFoundException('Notificación no encontrada');
 
-    notif.estado = 'atendida';
-    notif.encargado_por = meseroId;
+    // Actualizar estado - usar el valor que viene del frontend
+    if (dto.estado) {
+      notif.estado = dto.estado;
+    }
+    
+    // Si viene encargado_por, lo asignamos
+    if (dto.encargado_por) {
+      notif.encargado_por = dto.encargado_por;
+    }
 
     return this.notifRepo.save(notif);
   }
