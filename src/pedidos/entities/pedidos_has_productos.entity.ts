@@ -52,6 +52,6 @@ export class Pedidos_has_productos {
   @OneToMany(() => Pedidos_has_extrassel, (p_h_es) => p_h_es.pedido_extra_id)
   p_h_es: Pedidos_has_extrassel;
 
-  @OneToMany(() => Pedidos_has_ingrsel, (p_h_is) => p_h_is.pedido_ingr_id)
+  @OneToMany(() => Pedidos_has_ingrsel, (p_h_is) => p_h_is.ped_ingr_id)
   p_h_is: Pedidos_has_ingrsel;
 }

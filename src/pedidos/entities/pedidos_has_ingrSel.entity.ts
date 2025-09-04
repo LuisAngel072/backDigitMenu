@@ -10,8 +10,8 @@ import { Ingredientes } from 'src/ingredientes/entities/ingredientes.entity';
 
 @Entity({ name: 'pedidos_has_ingrsel' })
 export class Pedidos_has_ingrsel {
-  @PrimaryGeneratedColumn({ name: 'pedido_ingr_id', type: 'int' })
-  pedido_ingr_id: number;
+  @PrimaryGeneratedColumn({ name: 'ped_ingr_id', type: 'int' })  // ← Cambiar aquí
+  ped_ingr_id: number;  // ← Y cambiar el nombre de la propiedad también
 
   @Column({ name: 'precio', type: 'decimal', precision: 5, scale: 2 })
   precio: number;

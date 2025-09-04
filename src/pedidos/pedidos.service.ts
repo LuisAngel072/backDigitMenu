@@ -42,26 +42,20 @@ export class PedidosService {
   ) {}
 
   async getPedidos(): Promise<Pedidos[]> {
-    try {
-      const pedidosF = await this.pedidosRepository.find({
-        relations: ['no_mesa'],
-      });
+  try {
+    const pedidosF = await this.pedidosRepository
+      .createQueryBuilder('pedido')
+      .leftJoinAndSelect('pedido.no_mesa', 'mesa')
+      .getMany();
 
-      if (!pedidosF || pedidosF.length === 0) {
-        throw new HttpException(
-          'No se encontrarorn pedidos',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      return pedidosF;
-    } catch (error) {
-      throw new HttpException(
-        `Ocurrió un error al intentar obtener los pedidos: ${error}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return pedidosF || [];
+  } catch (error) {
+    throw new HttpException(
+      `Ocurrió un error al intentar obtener los pedidos: ${error}`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
+}
   /**
    * Obtiene el pedido iniciado del momento según el número de mesa
    * que se esté buscando. Esta función será utilizada para determinar
@@ -73,7 +67,7 @@ export class PedidosService {
   async getPedidoIniciadoByNoMesa(no_mesa: number) {
     try {
       const pedidoF = await this.pedidosRepository.findOne({
-        where: { no_mesa: { id_mesa: no_mesa }, estado: EstadoPedido.iniciado },
+        where: { no_mesa: { id_mesa: no_mesa } },
         relations: { no_mesa: true },
       });
 
