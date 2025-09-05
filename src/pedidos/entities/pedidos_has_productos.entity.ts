@@ -41,17 +41,17 @@ export class Pedidos_has_productos {
   })
   estado: EstadoPedidoHasProductos;
 
-  //Almacena el precio en el que se compro un producto en ese momento
   @Column({ name: 'precio', type: 'decimal', precision: 7, scale: 2 })
   precio: number;
 
-  @ManyToOne(() => Opciones, (opciones) => opciones.p_h_p)
+  @ManyToOne(() => Opciones, (opciones) => opciones.p_h_p, { nullable: true })
   @JoinColumn({ name: 'opcion_id' })
   opcion_id: Opciones;
 
-  @OneToMany(() => Pedidos_has_extrassel, (p_h_es) => p_h_es.pedido_extra_id)
-  p_h_es: Pedidos_has_extrassel;
+  // ✅ CORREGIDO: Relaciones OneToMany deben apuntar al campo correcto y ser arrays
+  @OneToMany(() => Pedidos_has_extrassel, (p_h_es) => p_h_es.pedido_prod_id)
+  extras: Pedidos_has_extrassel[];
 
-  @OneToMany(() => Pedidos_has_ingrsel, (p_h_is) => p_h_is.ped_ingr_id)
-  p_h_is: Pedidos_has_ingrsel;
+  @OneToMany(() => Pedidos_has_ingrsel, (p_h_is) => p_h_is.pedido_prod_id)
+  ingredientes: Pedidos_has_ingrsel[];
 }

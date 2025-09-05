@@ -84,38 +84,55 @@ export class PedidosService {
     }
   }
 
-  async getProductosPedido(
-    id_pedido: number,
-  ): Promise<Pedidos_has_productos[]> {
-    try {
-      const pedido = await this.pedidosRepository.findOne({
-        where: { id_pedido: id_pedido },
-      });
-      if (!pedido) {
-        throw new HttpException(
-          'No se encontró el pedido',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      const p_h_pr = await this.p_h_prRepository.find({
-        where: { pedido_id: pedido },
-        relations: ['opcion_id', 'pedido_id.no_mesa'],
-      });
-      if (!p_h_pr || p_h_pr.length === 0) {
-        throw new HttpException(
-          'No se encontraron productos en el pedido',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      return p_h_pr;
-    } catch (error) {
+  // Versión corregida del método getProductosPedido
+async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
+  try {
+    console.log(`🔍 Buscando productos para pedido ID: ${id_pedido}`);
+    
+    // Primero verifica que el pedido existe
+    const pedido = await this.pedidosRepository.findOne({
+      where: { id_pedido: id_pedido },
+      relations: ['no_mesa']
+    });
+    
+    console.log(`📋 Pedido encontrado:`, pedido);
+    
+    if (!pedido) {
       throw new HttpException(
-        `Ocurrió un error al intentar obtener los productos del pedido: ${error}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        `No se encontró el pedido con ID ${id_pedido}`,
+        HttpStatus.NOT_FOUND,
       );
     }
+
+    // Luego busca los productos del pedido
+    const p_h_pr = await this.p_h_prRepository.find({
+      where: { pedido_id: { id_pedido: id_pedido } }, // ✅ Especifica el campo exacto
+      relations: {
+        opcion_id: true,
+        producto_id: true,  // ✅ Asegúrate de cargar el producto
+        pedido_id: {
+          no_mesa: true
+        }
+      }
+    });
+
+    console.log(`🍽️ Productos encontrados (${p_h_pr.length}):`, p_h_pr);
+
+    if (!p_h_pr || p_h_pr.length === 0) {
+      // ✅ En lugar de lanzar error, devuelve array vacío
+      console.log(`⚠️ No se encontraron productos para el pedido ${id_pedido}`);
+      return [];
+    }
+
+    return p_h_pr;
+  } catch (error) {
+    console.error(`❌ Error en getProductosPedido:`, error);
+    throw new HttpException(
+      `Ocurrió un error al intentar obtener los productos del pedido: ${error.message}`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
+}
 
   /**
    * Obtiene todos los datos que tiene un producto en un pedido y los elementos necesarios
