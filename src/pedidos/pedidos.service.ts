@@ -273,108 +273,111 @@ async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
    * @returns Registro en pedidos_has_productos
    */
   async addProductoAPedido(
-    p_h_prDTO: CrPedidosHasProductosDTO,
-  ): Promise<Pedidos_has_productos> {
-    try {
-      const extras: Extras[] = [];
-      const ingrs: Ingredientes[] = [];
+  p_h_prDTO: CrPedidosHasProductosDTO,
+): Promise<Pedidos_has_productos> {
+  try {
+    const extras: Extras[] = [];
+    const ingrs: Ingredientes[] = [];
 
-      const pedidoF = await this.pedidosRepository.findOne({
-        where: { id_pedido: p_h_prDTO.pedido_id },
-      });
-      const productoF = await this.productosRepository.findOne({
-        where: { id_prod: p_h_prDTO.producto_id },
-      });
-      const opcionF = await this.opcRepository.findOne({
-        where: { id_opcion: p_h_prDTO.opcion_id },
-      });
+    const pedidoF = await this.pedidosRepository.findOne({
+      where: { id_pedido: p_h_prDTO.pedido_id },
+    });
+    const productoF = await this.productosRepository.findOne({
+      where: { id_prod: p_h_prDTO.producto_id },
+    });
+    const opcionF = await this.opcRepository.findOne({
+      where: { id_opcion: p_h_prDTO.opcion_id },
+    });
 
-      if (!pedidoF) {
-        throw new HttpException(
-          `No se encontró el pedido con id ${p_h_prDTO.pedido_id}`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      if (!productoF) {
-        throw new HttpException(
-          `No se encontró el producto con id ${p_h_prDTO.producto_id}`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      if (!opcionF) {
-        throw new HttpException(
-          `No se encontró la opción del producto con id ${p_h_prDTO.opcion_id}`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      const body = {
-        pedido_id: pedidoF,
-        producto_id: productoF,
-        opcion_id: opcionF,
-        precio: p_h_prDTO.precio,
-      };
-      const p_h_prC = await this.p_h_prRepository.create(body);
-      const p_h_prS = await this.p_h_prRepository.save(p_h_prC);
-
-      if (p_h_prDTO.extras.length > 0) {
-        for (const p_h_extra of p_h_prDTO.extras) {
-          const extraF = await this.extrasRepository.findOne({
-            where: { id_extra: p_h_extra },
-          });
-          if (!extraF) {
-            throw new HttpException(
-              `No se encontró el extra seleccionado con id ${p_h_extra}`,
-              HttpStatus.NOT_FOUND,
-            );
-          }
-          extras.push(extraF);
-        }
-        for (const extra of extras) {
-          const body = {
-            pedido_prod_id: p_h_prS,
-            extra_id: extra,
-            precio: extra.precio,
-          };
-          const p_h_exSC = this.p_h_exsRepository.create(body);
-          await this.p_h_exsRepository.save(p_h_exSC);
-        }
-      }
-
-      if (p_h_prDTO.ingr.length > 0) {
-        for (const p_h_ingr of p_h_prDTO.ingr) {
-          const ingrF = await this.ingrRepository.findOne({
-            where: { id_ingr: p_h_ingr },
-          });
-          if (!ingrF) {
-            throw new HttpException(
-              `No se encontró el extra seleccionado con id ${p_h_ingr}`,
-              HttpStatus.NOT_FOUND,
-            );
-          }
-          ingrs.push(ingrF);
-        }
-
-        for (const ingr of ingrs) {
-          const body = {
-            pedido_prod_id: p_h_prS,
-            ingrediente_id: ingr,
-            precio: ingr.precio,
-          };
-          const p_h_ingrSC = this.p_h_ingrsRepository.create(body);
-          await this.p_h_ingrsRepository.save(p_h_ingrSC);
-        }
-      }
-
-      return p_h_prS;
-    } catch (error) {
+    if (!pedidoF) {
       throw new HttpException(
-        `Ocurrió un error al intentar agregar un producto al pedido con id ${p_h_prDTO.pedido_id}: ${error}`,
-        HttpStatus.BAD_REQUEST,
+        `No se encontró el pedido con id ${p_h_prDTO.pedido_id}`,
+        HttpStatus.NOT_FOUND,
       );
     }
+
+    if (!productoF) {
+      throw new HttpException(
+        `No se encontró el producto con id ${p_h_prDTO.producto_id}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (!opcionF) {
+      throw new HttpException(
+        `No se encontró la opción del producto con id ${p_h_prDTO.opcion_id}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const body = {
+      pedido_id: pedidoF,
+      producto_id: productoF,
+      opcion_id: opcionF,
+      precio: p_h_prDTO.precio,
+      estado: EstadoPedidoHasProductos.sin_preparar, // ✅ Estado por defecto explícito
+    };
+    
+    const p_h_prC = await this.p_h_prRepository.create(body);
+    const p_h_prS = await this.p_h_prRepository.save(p_h_prC);
+
+    if (p_h_prDTO.extras.length > 0) {
+      for (const p_h_extra of p_h_prDTO.extras) {
+        const extraF = await this.extrasRepository.findOne({
+          where: { id_extra: p_h_extra },
+        });
+        if (!extraF) {
+          throw new HttpException(
+            `No se encontró el extra seleccionado con id ${p_h_extra}`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        extras.push(extraF);
+      }
+      for (const extra of extras) {
+        const body = {
+          pedido_prod_id: p_h_prS,
+          extra_id: extra,
+          precio: extra.precio,
+        };
+        const p_h_exSC = this.p_h_exsRepository.create(body);
+        await this.p_h_exsRepository.save(p_h_exSC);
+      }
+    }
+
+    if (p_h_prDTO.ingr.length > 0) {
+      for (const p_h_ingr of p_h_prDTO.ingr) {
+        const ingrF = await this.ingrRepository.findOne({
+          where: { id_ingr: p_h_ingr },
+        });
+        if (!ingrF) {
+          throw new HttpException(
+            `No se encontró el extra seleccionado con id ${p_h_ingr}`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        ingrs.push(ingrF);
+      }
+
+      for (const ingr of ingrs) {
+        const body = {
+          pedido_prod_id: p_h_prS,
+          ingrediente_id: ingr,
+          precio: ingr.precio,
+        };
+        const p_h_ingrSC = this.p_h_ingrsRepository.create(body);
+        await this.p_h_ingrsRepository.save(p_h_ingrSC);
+      }
+    }
+
+    return p_h_prS;
+  } catch (error) {
+    throw new HttpException(
+      `Ocurrió un error al intentar agregar un producto al pedido con id ${p_h_prDTO.pedido_id}: ${error}`,
+      HttpStatus.BAD_REQUEST,
+    );
   }
+}
 
   /**
    * Cambia el estado de un producto en pedidos_has_productos si el cocinero ya preparó
