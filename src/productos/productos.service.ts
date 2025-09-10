@@ -50,6 +50,7 @@ export class ProductosService {
     try {
       const producto = await this.productosRepository.findOne({
         where: { id_prod },
+        relations: ['sub_cat_id', 'sub_cat_id.categoria_id'],
       });
       if (!producto) {
         throw new HttpException(
