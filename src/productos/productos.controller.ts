@@ -68,7 +68,7 @@ export class ProductosController {
   @Patch('actualizar/:id_producto')
   async actualizarProducto(
     @Param('id_producto', ParseIntPipe) id_producto: number,
-    prodDTO: UpProductosDto,
+    @Body() prodDTO: UpProductosDto,
   ) {
     return await this.productosService.upProducto(id_producto, prodDTO);
   }

@@ -8,6 +8,8 @@ import { Productos_has_opciones } from './entities/productos_has_opciones.entity
 import { CrProductosDto } from './dtos/crear-producto.dto';
 import { UpProductosDto } from './dtos/up-producto.dto';
 import { Sub_categorias } from 'src/sub-categorias/entities/sub_categorias.entity';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class ProductosService {
@@ -208,14 +210,20 @@ export class ProductosService {
     }
   }
 
+  /**
+   * Actualiza las propiedades de un producto y elimina las relaciones para
+   * agregar las nuevas dadas por el DTO.
+   * Si la imagen se va a cambiar, primero debe subir la imagen y luego
+   * pasar la ruta en el DTO. Eliminar el archivo anterior y enlazar la nueva ruta
+   * al producto actualizado.
+   * @param id_prod Id del producto a actualizar
+   * @param prodDto Revisar el DTO de los productos, debe contener todas las relaciones
+   * de extras, ingredientes y opciones
+   * @returns producto actualizado
+   */
   async upProducto(id_prod: number, prodDto: UpProductosDto) {
     try {
-      const producto = await this.productosRepository.findOne({
-        where: { id_prod: id_prod },
-      });
-      const sub_cat_id = await this.subCategoriasRepository.findOne({
-        where: { id_subcat: prodDto.sub_cat_id },
-      });
+      const producto = await this.productosRepository.findOneBy({ id_prod });
 
       if (!producto) {
         throw new HttpException(
@@ -223,100 +231,77 @@ export class ProductosService {
           HttpStatus.NOT_FOUND,
         );
       }
-      //Actualiza individualmente cada propiedad del producto
-      producto.nombre_prod = prodDto.nombre_prod
-        ? prodDto.nombre_prod
-        : producto.nombre_prod;
 
-      producto.descripcion = prodDto.descripcion
-        ? prodDto.descripcion
-        : producto.descripcion;
-
-      producto.img_prod = prodDto.img_prod
-        ? prodDto.img_prod
-        : producto.img_prod;
-
-      producto.precio = prodDto.precio ? prodDto.precio : producto.precio;
-
-      producto.sub_cat_id = sub_cat_id ? sub_cat_id : producto.sub_cat_id;
-
-      let relacionesEliminar = prodDto.extras.length; //Contabiliza las relaciones a eliminar
-      let i = 0;
-      /*
-        Mapea sobre todas las relaciones dadas por el DTO para actualizar el producto.
-        Por cada relación actualizada, disminuye el valor de relacionesEliminar, porque significa
-        eliminar un registro o relación menos.
-         */
-      for (const extra of prodDto.extras) {
-        producto.prod_has_extra_id[i].extra_id = extra;
-        i++;
-        relacionesEliminar--;
+      // Actualizar imagen si se proporciona una nueva
+      if (prodDto.img_prod !== undefined) {
+        await this.upImgProducto(id_prod, prodDto.img_prod);
       }
-      /*
-        Elimina las relaciones sobrantes respecto prodDto sobre el producto a actualizar.
-        Por ejemplo: Si el producto tenía 4 extras y en la actualización se deseleccionó
-        un extra, brindando solo 3 extras, relacionesEliminar tendrá valor de 1.
-        El for buscara la relación que no coincide con el DTO de entrada y eliminará la
-        relación.
-        */
-      for (let j = 0; j < relacionesEliminar; j++) {
-        //Busca una relación posible a eliminar
-        const relEl = await this.prod_has_extras.findOne({
-          where: {
-            producto_id: producto,
-            extra_id: producto.prod_has_extra_id[j].extra_id,
-          },
+
+      // Actualizar propiedades directas del producto
+      const { extras, ingredientes, opciones, sub_cat_id, ...datosProducto } =
+        prodDto;
+
+      const datosAActualizar: any = { ...datosProducto };
+
+      if (sub_cat_id) {
+        const subCategoria = await this.subCategoriasRepository.findOneBy({
+          id_subcat: sub_cat_id,
         });
-        if (relEl.extra_id !== prodDto.extras[j]) {
-          await this.prod_has_extras.delete(relEl.producto_extra_id);
+        if (!subCategoria) {
+          throw new HttpException(
+            'Subcategoría no encontrada',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        datosAActualizar.sub_cat_id = { id_subcat: sub_cat_id };
+      }
+
+      await this.productosRepository.update({ id_prod }, datosAActualizar);
+
+      // Actualizar relaciones
+      if (extras) {
+        // Eliminar relaciones de extras anteriores
+        await this.prod_has_extras.delete({ producto_id: { id_prod } });
+        // Crear las nuevas relaciones
+        for (const extra of extras) {
+          const relExtra = this.prod_has_extras.create({
+            producto_id: producto,
+            extra_id: extra,
+            precio: extra.precio,
+          });
+          await this.prod_has_extras.save(relExtra);
         }
       }
 
-      relacionesEliminar = prodDto.ingredientes.length; //Contabiliza las relaciones a eliminar
-      i = 0;
-
-      for (const ingr of prodDto.ingredientes) {
-        producto.prod_has_ingr_id[i].ingrediente_id = ingr;
-        i++;
-        relacionesEliminar--;
-      }
-
-      for (let j = 0; j < relacionesEliminar; j++) {
-        //Busca una relación posible a eliminar
-        const relEl = await this.prod_has_ingr.findOne({
-          where: {
+      if (ingredientes) {
+        // Eliminar relaciones de ingredientes anteriores
+        await this.prod_has_ingr.delete({ producto_id: { id_prod } });
+        // Crear las nuevas relaciones
+        for (const ingr of ingredientes) {
+          const relIngr = this.prod_has_ingr.create({
             producto_id: producto,
-            ingrediente_id: producto.prod_has_ingr_id[j].ingrediente_id,
-          },
-        });
-        if (relEl.ingrediente_id !== prodDto.ingredientes[j]) {
-          await this.prod_has_ingr.delete(relEl.prod_ingr_id);
+            ingrediente_id: ingr,
+            precio: ingr.precio,
+          });
+          await this.prod_has_ingr.save(relIngr);
         }
       }
 
-      relacionesEliminar = prodDto.opciones.length; //Contabiliza las relaciones a eliminar
-      i = 0;
-
-      for (const opc of prodDto.opciones) {
-        producto.prod_has_opc_id[i].opcion_id = opc;
-        i++;
-        relacionesEliminar--;
-      }
-
-      for (let j = 0; j < relacionesEliminar; j++) {
-        //Busca una relación posible a eliminar
-        const relEl = await this.prod_has_opc.findOne({
-          where: {
+      if (opciones) {
+        // Eliminar relaciones de opciones anteriores
+        await this.prod_has_opc.delete({ producto_id: { id_prod } });
+        // Crear las nuevas relaciones
+        for (const opc of opciones) {
+          const relOpc = this.prod_has_opc.create({
             producto_id: producto,
-            opcion_id: producto.prod_has_opc_id[j].opcion_id,
-          },
-        });
-        if (relEl.opcion_id !== prodDto.opciones[j]) {
-          await this.prod_has_opc.delete(relEl.producto_opc_id);
+            opcion_id: opc,
+            precio: opc.porcentaje,
+          });
+          await this.prod_has_opc.save(relOpc);
         }
       }
 
-      return await this.productosRepository.update(id_prod, producto);
+      return await this.obtenerProducto(id_prod);
     } catch (error) {
       console.error(error);
       throw new HttpException(
@@ -356,6 +341,45 @@ export class ProductosService {
       console.error(error);
       throw new HttpException(
         'Ocurrió un error al intentar eliminar el producto',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async upImgProducto(id_prod: number, img_prod: string) {
+    try {
+      const producto = await this.productosRepository.findOne({
+        where: { id_prod: id_prod },
+      });
+      if (!producto) {
+        throw new HttpException(
+          'No se encontró el producto en la bd',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (img_prod) {
+        const prevRutaImg = producto.img_prod;
+        // Si la ruta nueva es distinta a la anterior, elimina el archivo antiguo
+        if (prevRutaImg && prevRutaImg !== img_prod) {
+          // Construir la ruta completa al archivo (asegúrate de que la carpeta 'uploads' sea la correcta)
+          const filePath = join(process.cwd(), 'uploads', prevRutaImg);
+          try {
+            await fs.unlink(filePath);
+            console.log('Archivo eliminado:', filePath);
+          } catch (err) {
+            console.error('Error al eliminar el archivo:', err);
+            // Puedes decidir si lanzar error o continuar
+          }
+        }
+      }
+
+      return await this.productosRepository.update(id_prod, {
+        img_prod: img_prod,
+      });
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Ocurrió un error al intentar actualizar la imagen del producto',
         HttpStatus.BAD_REQUEST,
       );
     }

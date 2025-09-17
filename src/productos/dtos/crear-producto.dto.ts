@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Extras } from 'src/extras/entities/extras.entity';
 import { Ingredientes } from 'src/ingredientes/entities/ingredientes.entity';
@@ -9,8 +10,10 @@ export class CrProductosDto {
   @IsString()
   descripcion: string;
   @IsString()
-  img_prod: string;
+  @IsOptional()
+  img_prod?: string;
   @IsNumber()
+  @Type(() => Number)
   precio: number;
   @IsNumber()
   sub_cat_id: number;
