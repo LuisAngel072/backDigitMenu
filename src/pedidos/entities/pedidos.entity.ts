@@ -39,15 +39,6 @@ export class Pedidos {
   })
   total: number;
 
-  @Column({
-    name: 'estado',
-    type: 'enum',
-    enum: EstadoPedido,
-    nullable: false,
-    default: EstadoPedido.iniciado,
-  })
-  estado: EstadoPedido;
-
   @OneToMany(() => Pedidos_has_productos, (p_h_p) => p_h_p.pedido_id)
   p_h_p: Pedidos_has_productos;
 }

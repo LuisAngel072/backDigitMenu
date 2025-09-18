@@ -6,6 +6,4 @@ export class UpPedidoDto {
   @IsOptional()
   total: number;
 
-  @IsOptional()
-  estado: EstadoPedido;
 }
