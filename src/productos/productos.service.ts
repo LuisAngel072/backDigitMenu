@@ -335,7 +335,14 @@ export class ProductosService {
       for (const opc of p_h_o) {
         await this.prod_has_ingr.delete(opc.producto_opc_id);
       }
-
+      const filePath = join(process.cwd(), 'uploads', producto.img_prod);
+      try {
+        await fs.unlink(filePath);
+        console.log('Archivo eliminado:', filePath);
+      } catch (err) {
+        console.error('Error al eliminar el archivo:', err);
+        // Puedes decidir si lanzar error o continuar
+      }
       return await this.productosRepository.delete(producto);
     } catch (error) {
       console.error(error);
