@@ -11,10 +11,11 @@ import { Opciones } from 'src/opciones/entities/opciones.entity';
 import { Ingredientes } from 'src/ingredientes/entities/ingredientes.entity';
 import { Extras } from 'src/extras/entities/extras.entity';
 import { Pedidos_has_productos } from './entities/pedidos_has_productos.entity';
+import { PedidosGateway } from './gateways/pedidos.gateway';
 
 @Module({
   controllers: [PedidosController],
-  providers: [PedidosService],
+  providers: [PedidosService, PedidosGateway],
   imports: [
     TypeOrmModule.forFeature([
       Pedidos,

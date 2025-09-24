@@ -1,5 +1,10 @@
 // src/mesas/mesas.service.ts
-import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Mesa } from './entities/mesa.entity';
@@ -19,7 +24,10 @@ export class MesasService {
       });
     } catch (error) {
       console.error('❌ Error al obtener todas las mesas:', error);
-      throw new HttpException('No se pudieron obtener las mesas', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'No se pudieron obtener las mesas',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -29,7 +37,10 @@ export class MesasService {
       return mesa || null;
     } catch (error) {
       console.error(`❌ Error al buscar la mesa ${no_mesa}:`, error);
-      throw new HttpException('Error al buscar la mesa', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Error al buscar la mesa',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -40,7 +51,10 @@ export class MesasService {
       return { message: 'Mesa insertada correctamente', result };
     } catch (error) {
       console.error('❌ Error al insertar la mesa:', error);
-      throw new HttpException('No se pudo insertar la mesa', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'No se pudo insertar la mesa',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -49,14 +63,19 @@ export class MesasService {
       const mesa = await this.findOne(no_mesa);
 
       if (!mesa) {
-        throw new NotFoundException(`No se encontró la mesa con número ${no_mesa}`);
+        throw new NotFoundException(
+          `No se encontró la mesa con número ${no_mesa}`,
+        );
       }
 
       await this.mesasRepository.remove(mesa);
       return { message: 'Mesa eliminada correctamente' };
     } catch (error) {
       console.error('❌ Error al eliminar la mesa:', error);
-      throw new HttpException('No se pudo eliminar la mesa', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'No se pudo eliminar la mesa',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

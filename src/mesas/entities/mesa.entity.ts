@@ -1,5 +1,11 @@
 // src/mesas/mesa.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Unique,
+  OneToMany,
+} from 'typeorm';
 import { Pedidos } from 'src/pedidos/entities/pedidos.entity';
 
 @Entity('mesas')
