@@ -4,7 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Domicilios } from './entities/domicilio.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Domicilios])],
-  providers: [DomicilioService]
+  imports: [TypeOrmModule.forFeature([Domicilios])],
+  providers: [DomicilioService],
+  exports: [DomicilioService],
 })
 export class DomicilioModule {}

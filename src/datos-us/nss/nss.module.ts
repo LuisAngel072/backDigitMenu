@@ -4,7 +4,8 @@ import { NSS } from './entities/nss.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([NSS])],
-  providers: [NssService]
+  imports: [TypeOrmModule.forFeature([NSS])],
+  providers: [NssService],
+  exports: [NssService],
 })
 export class NssModule {}
