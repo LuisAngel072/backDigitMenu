@@ -8,7 +8,6 @@ import { EmailService } from 'src/datos-us/email/email.service';
 import { NssService } from 'src/datos-us/nss/nss.service';
 import { RfcService } from 'src/datos-us/rfc/rfc.service';
 import { DomicilioService } from 'src/datos-us/domicilio/domicilio.service';
-import { Img_us } from 'src/datos-us/img-us/entities/img_us.entity';
 import { ImgUsService } from 'src/datos-us/img-us/img-us.service';
 import { RolesService } from 'src/datos-us/roles/roles.service';
 import * as bcrypt from 'bcrypt';
@@ -19,7 +18,6 @@ export class UsuariosService {
   constructor(
     @InjectRepository(Usuarios)
     private readonly usuariosRepository: Repository<Usuarios>,
-    @InjectRepository(Img_us)
     private readonly telService: TelefonoService,
     private readonly emService: EmailService,
     private readonly nssService: NssService,

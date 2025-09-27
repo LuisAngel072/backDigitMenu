@@ -7,9 +7,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RolesModule } from 'src/datos-us/roles/roles.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsuariosHasRoles } from 'src/datos-us/roles/entities/usuarios_has_roles.entity';
+import { Roles } from 'src/datos-us/roles/entities/roles.entity';
+import { Usuarios } from 'src/usuarios/entities/usuarios.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Usuarios, Roles, UsuariosHasRoles]),
+    ConfigModule,
     forwardRef(() => UsuariosModule),
     forwardRef(() => RolesModule),
     PassportModule.register({

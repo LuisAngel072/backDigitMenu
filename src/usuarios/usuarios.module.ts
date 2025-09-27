@@ -1,15 +1,9 @@
+/* eslint-disable prettier/prettier */
 import { forwardRef, Module } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuarios } from './entities/usuarios.entity';
 import { UsuariosController } from './usuarios.controller';
-import { TelefonoService } from 'src/datos-us/telefono/telefono.service';
-import { DomicilioService } from 'src/datos-us/domicilio/domicilio.service';
-import { EmailService } from 'src/datos-us/email/email.service';
-import { NssService } from 'src/datos-us/nss/nss.service';
-import { RfcService } from 'src/datos-us/rfc/rfc.service';
-import { ImgUsService } from 'src/datos-us/img-us/img-us.service';
-import { RolesService } from 'src/datos-us/roles/roles.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { TelefonoModule } from 'src/datos-us/telefono/telefono.module';
 import { EmailModule } from 'src/datos-us/email/email.module';
@@ -33,6 +27,6 @@ import { RolesModule } from 'src/datos-us/roles/roles.module';
   ],
   controllers: [UsuariosController],
   providers: [UsuariosService],
-  exports: [UsuariosService],
+  exports: [UsuariosService, TypeOrmModule],
 })
 export class UsuariosModule {}
