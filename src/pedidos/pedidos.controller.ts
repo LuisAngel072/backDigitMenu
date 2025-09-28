@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -70,9 +71,16 @@ export class PedidosController {
   }
 
   @Patch('actualizar-total/:id_pedido')
-async actualizarTotalPedido(
-  @Param('id_pedido', ParseIntPipe) id_pedido: number,
-) {
-  return await this.pedidosService.actualizarTotalPedido(id_pedido);
-}
+  async actualizarTotalPedido(
+    @Param('id_pedido', ParseIntPipe) id_pedido: number,
+  ) {
+    return await this.pedidosService.actualizarTotalPedido(id_pedido);
+  }
+
+  @Delete('productos/:pedido_prod_id')
+  async eliminarProductoDelPedido(
+    @Param('pedido_prod_id', ParseIntPipe) pedido_prod_id: number,
+  ) {
+    return await this.pedidosService.eliminarProductoDelPedido(pedido_prod_id);
+  }
 }

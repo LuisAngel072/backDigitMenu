@@ -453,4 +453,97 @@ async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
       );
     }
   }
+
+  /**
+   * Elimina un producto específico de un pedido, incluyendo sus extras e ingredientes
+   * Solo permite eliminar si el producto está en estado "Sin preparar"
+   * @param pedido_prod_id ID del registro en pedidos_has_productos
+   * @returns Resultado de la eliminación
+  */
+  async eliminarProductoDelPedido(pedido_prod_id: number): Promise<any> {
+    try {
+      console.log(`🗑️ Intentando eliminar producto con pedido_prod_id: ${pedido_prod_id}`);
+      
+      // 1. Verificar que el producto existe y obtener sus datos
+      const productoEnPedido = await this.p_h_prRepository.findOne({
+        where: { pedido_prod_id: pedido_prod_id },
+        relations: ['pedido_id', 'producto_id']
+      });
+
+      console.log(`📦 Producto encontrado:`, productoEnPedido);
+
+      if (!productoEnPedido) {
+        console.log(`❌ No se encontró el producto con pedido_prod_id: ${pedido_prod_id}`);
+        throw new HttpException(
+          `No se encontró el producto con ID ${pedido_prod_id} en el pedido`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // 2. Verificar que el producto esté en estado "Sin preparar"
+      console.log(`🔍 Estado actual del producto: ${productoEnPedido.estado}`);
+      if (productoEnPedido.estado !== EstadoPedidoHasProductos.sin_preparar) {
+        console.log(`⚠️ El producto no se puede eliminar, estado: ${productoEnPedido.estado}`);
+        throw new HttpException(
+          `No se puede eliminar el producto porque ya está en estado: ${productoEnPedido.estado}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const pedidoId = productoEnPedido.pedido_id.id_pedido;
+      console.log(`📋 ID del pedido: ${pedidoId}`);
+
+      // 3. Eliminar extras relacionados (usando el pedido_prod_id directamente)
+      console.log(`🧩 Eliminando extras relacionados...`);
+      const extrasEliminados = await this.p_h_exsRepository
+        .createQueryBuilder()
+        .delete()
+        .from(Pedidos_has_extrassel)
+        .where("pedido_prod_id = :pedido_prod_id", { pedido_prod_id: pedido_prod_id })
+        .execute();
+      
+      console.log(`✅ Extras eliminados: ${extrasEliminados.affected}`);
+
+      // 4. Eliminar ingredientes relacionados (usando el pedido_prod_id directamente)
+      console.log(`🌿 Eliminando ingredientes relacionados...`);
+      const ingredientesEliminados = await this.p_h_ingrsRepository
+        .createQueryBuilder()
+        .delete()
+        .from(Pedidos_has_ingrsel)
+        .where("pedido_prod_id = :pedido_prod_id", { pedido_prod_id: pedido_prod_id })
+        .execute();
+      
+      console.log(`✅ Ingredientes eliminados: ${ingredientesEliminados.affected}`);
+
+      // 5. Eliminar el producto del pedido
+      console.log(`🗑️ Eliminando el producto principal...`);
+      const productoEliminado = await this.p_h_prRepository.delete(pedido_prod_id);
+      console.log(`✅ Producto eliminado: ${productoEliminado.affected}`);
+
+      // 6. Actualizar el total del pedido
+      console.log(`💰 Actualizando total del pedido...`);
+      await this.actualizarTotalPedido(pedidoId);
+
+      const resultado = {
+        message: `Producto eliminado exitosamente del pedido`,
+        pedido_prod_id: pedido_prod_id,
+        pedido_id: pedidoId,
+        extras_eliminados: extrasEliminados.affected,
+        ingredientes_eliminados: ingredientesEliminados.affected
+      };
+
+      console.log(`🎉 Eliminación exitosa:`, resultado);
+      return resultado;
+
+    } catch (error) {
+      console.error(`❌ Error en eliminarProductoDelPedido:`, error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        `Error al eliminar el producto del pedido: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
