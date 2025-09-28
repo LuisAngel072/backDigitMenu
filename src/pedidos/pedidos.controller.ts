@@ -68,4 +68,11 @@ export class PedidosController {
   ) {
     return await this.pedidosService.upPedido(id_pedido, pedidoDTO);
   }
+
+  @Patch('actualizar-total/:id_pedido')
+async actualizarTotalPedido(
+  @Param('id_pedido', ParseIntPipe) id_pedido: number,
+) {
+  return await this.pedidosService.actualizarTotalPedido(id_pedido);
+}
 }

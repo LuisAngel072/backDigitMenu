@@ -106,10 +106,10 @@ async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
 
     // Luego busca los productos del pedido
     const p_h_pr = await this.p_h_prRepository.find({
-      where: { pedido_id: { id_pedido: id_pedido } }, // ✅ Especifica el campo exacto
+      where: { pedido_id: { id_pedido: id_pedido } }, 
       relations: {
         opcion_id: true,
-        producto_id: true,  // ✅ Asegúrate de cargar el producto
+        producto_id: true,  
         pedido_id: {
           no_mesa: true
         }
@@ -204,23 +204,56 @@ async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
    * @returns Pedido creado y listo para que aparezca en meseros y cocina
    */
   async crearPedido(pedidoDTO: CrPedidoDto): Promise<Pedidos> {
-    try {
-      const mesa = await this.mesasRepository.findOne({
-        where: { no_mesa: pedidoDTO.no_mesa },
-      });
-      if (!mesa) {
-        throw new HttpException('No se encontró la mesa', HttpStatus.NOT_FOUND);
-      }
-      const pedido = { no_mesa: mesa };
-      const pedidoCr = this.pedidosRepository.create(pedido);
-      return await this.pedidosRepository.save(pedidoCr);
-    } catch (error) {
-      throw new HttpException(
-        `Ocurrió un error al intentar crear el pedido: ${error}`,
-        HttpStatus.BAD_REQUEST,
-      );
+  try {
+    const mesa = await this.mesasRepository.findOne({
+      where: { no_mesa: pedidoDTO.no_mesa },
+    });
+    if (!mesa) {
+      throw new HttpException('No se encontró la mesa', HttpStatus.NOT_FOUND);
     }
+    
+    const pedido = { 
+      no_mesa: mesa,
+      fecha_pedido: new Date(), 
+      total: 0 
+    };
+    
+    const pedidoCr = this.pedidosRepository.create(pedido);
+    return await this.pedidosRepository.save(pedidoCr);
+  } catch (error) {
+    throw new HttpException(
+      `Ocurrió un error al intentar crear el pedido: ${error}`,
+      HttpStatus.BAD_REQUEST,
+    );
   }
+}
+
+  async actualizarTotalPedido(id_pedido: number): Promise<UpdateResult> {
+  try {
+    // 1. Obtener todos los productos del pedido
+    const productos = await this.p_h_prRepository.find({
+      where: { pedido_id: { id_pedido: id_pedido } }
+    });
+
+    // 2. Calcular el total sumando todos los precios
+    const total = productos.reduce((sum, prod) => {
+      return sum + parseFloat(prod.precio.toString());
+    }, 0);
+
+    console.log(`Actualizando total del pedido ${id_pedido}: ${total}`);
+
+    // 3. Actualizar el pedido con el total calculado
+    return await this.pedidosRepository.update(id_pedido, { 
+      total: parseFloat(total.toFixed(2)) 
+    });
+
+  } catch (error) {
+    throw new HttpException(
+      `Error al actualizar total del pedido ${id_pedido}: ${error}`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+}
   /**
    * Esta función será utilizada en dos casos:
    * 1.- Cuando el usuario comience agregar productos en el pedido, presionando el botón de
@@ -303,7 +336,7 @@ async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
       );
     }
 
-    if (!opcionF) {
+    if (!opcionF && p_h_prDTO.opcion_id) { 
       throw new HttpException(
         `No se encontró la opción del producto con id ${p_h_prDTO.opcion_id}`,
         HttpStatus.NOT_FOUND,
@@ -313,14 +346,15 @@ async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
     const body = {
       pedido_id: pedidoF,
       producto_id: productoF,
-      opcion_id: opcionF,
+      opcion_id: opcionF || null, 
       precio: p_h_prDTO.precio,
-      estado: EstadoPedidoHasProductos.sin_preparar, // ✅ Estado por defecto explícito
+      estado: EstadoPedidoHasProductos.sin_preparar,
     };
     
     const p_h_prC = await this.p_h_prRepository.create(body);
     const p_h_prS = await this.p_h_prRepository.save(p_h_prC);
 
+    // Resto del código igual para extras e ingredientes...
     if (p_h_prDTO.extras.length > 0) {
       for (const p_h_extra of p_h_prDTO.extras) {
         const extraF = await this.extrasRepository.findOne({
@@ -352,7 +386,7 @@ async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
         });
         if (!ingrF) {
           throw new HttpException(
-            `No se encontró el extra seleccionado con id ${p_h_ingr}`,
+            `No se encontró el ingrediente seleccionado con id ${p_h_ingr}`,
             HttpStatus.NOT_FOUND,
           );
         }
@@ -369,6 +403,9 @@ async getProductosPedido(id_pedido: number): Promise<Pedidos_has_productos[]> {
         await this.p_h_ingrsRepository.save(p_h_ingrSC);
       }
     }
+
+    // Actualizar automáticamente el total del pedido
+    await this.actualizarTotalPedido(p_h_prDTO.pedido_id);
 
     return p_h_prS;
   } catch (error) {

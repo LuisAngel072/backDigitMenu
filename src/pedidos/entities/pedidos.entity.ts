@@ -35,7 +35,7 @@ export class Pedidos {
     type: 'decimal',
     precision: 7,
     scale: 2,
-    nullable: true,
+    default: 0,
   })
   total: number;
 
