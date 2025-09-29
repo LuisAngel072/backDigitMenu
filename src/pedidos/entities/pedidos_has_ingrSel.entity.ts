@@ -16,7 +16,6 @@ export class Pedidos_has_ingrsel {
   @Column({ name: 'precio', type: 'decimal', precision: 5, scale: 2 })
   precio: number;
 
-  // ✅ CORREGIDO: La relación debe referirse a la entidad completa
   @ManyToOne(() => Pedidos_has_productos, (php) => php.ingredientes)
   @JoinColumn({ name: 'pedido_prod_id' })
   pedido_prod_id: Pedidos_has_productos;

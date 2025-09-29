@@ -8,5 +8,6 @@ import { ImgUsController } from './img-us.controller';
   imports: [TypeOrmModule.forFeature([Img_us])],
   providers: [ImgUsService],
   controllers: [ImgUsController],
+  exports: [ImgUsService],
 })
 export class ImgUsModule {}

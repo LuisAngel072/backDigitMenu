@@ -52,7 +52,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
     PedidosModule,
     ProductosModule,
     MesasModule,
-    NotificacionesModule
+    NotificacionesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

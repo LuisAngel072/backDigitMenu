@@ -4,7 +4,8 @@ import { Telefonos } from './entities/telefono.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Telefonos])],
-  providers: [TelefonoService]
+  imports: [TypeOrmModule.forFeature([Telefonos])],
+  providers: [TelefonoService],
+  exports: [TelefonoService],
 })
 export class TelefonoModule {}
