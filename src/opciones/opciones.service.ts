@@ -56,9 +56,9 @@ export class OpcionesService {
     }
   }
 
-  async crOpcion(crOpcDto: CrOpcionesDto) {
+  async crOpcion(crOpcDto: CrOpcionesDto): Promise<Opciones> {
     try {
-      console.log(crOpcDto)
+      console.log(crOpcDto);
       const opcN = this.opcionesRepository.create(crOpcDto);
 
       const opcS = await this.opcionesRepository.save(opcN);
@@ -89,10 +89,9 @@ export class OpcionesService {
         );
 
         return opcUp;
-        
       }
     } catch (error) {
-      console.error('Ocurrió un error al intentar actualizar la opción');
+      console.error('Ocurrió un error al intentar actualizar la opción', error);
       throw new HttpException(
         'Ocurrió un error al intentar actualizar la opción',
         HttpStatus.BAD_REQUEST,
@@ -114,7 +113,7 @@ export class OpcionesService {
         return opcDel;
       }
     } catch (error) {
-      console.error('Ocurrió un error al intentar eliminar la opción');
+      console.error('Ocurrió un error al intentar eliminar la opción', error);
       throw new HttpException(
         'Ocurrió un error al intentar eliminar la opción',
         HttpStatus.BAD_REQUEST,

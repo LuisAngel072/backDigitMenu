@@ -20,6 +20,7 @@ import { PedidosModule } from './pedidos/pedidos.module';
 import { ProductosModule } from './productos/productos.module';
 import { MesasModule } from './mesas/mesas.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { LogsdbModule } from './logsdb/logsdb.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
     ProductosModule,
     MesasModule,
     NotificacionesModule,
+    LogsdbModule,
   ],
   controllers: [AppController],
   providers: [AppService],

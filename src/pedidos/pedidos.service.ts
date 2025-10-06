@@ -211,56 +211,62 @@ export class PedidosService {
    * @returns Pedido creado y listo para que aparezca en meseros y cocina
    */
   async crearPedido(pedidoDTO: CrPedidoDto): Promise<Pedidos> {
-  try {
-    const mesa = await this.mesasRepository.findOne({
-      where: { no_mesa: pedidoDTO.no_mesa },
-    });
-    if (!mesa) {
-      throw new HttpException('No se encontró la mesa', HttpStatus.NOT_FOUND);
+    try {
+      const mesa = await this.mesasRepository.findOne({
+        where: { no_mesa: pedidoDTO.no_mesa },
+      });
+      if (!mesa) {
+        throw new HttpException('No se encontró la mesa', HttpStatus.NOT_FOUND);
+      }
+
+      const pedido = {
+        no_mesa: mesa,
+        fecha_pedido: new Date(),
+        total: 0,
+      };
+
+      const pedidoCr = this.pedidosRepository.create(pedido);
+      return await this.pedidosRepository.save(pedidoCr);
+    } catch (error) {
+      throw new HttpException(
+        `Ocurrió un error al intentar crear el pedido: ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    
-    const pedido = { 
-      no_mesa: mesa,
-      fecha_pedido: new Date(), 
-      total: 0 
-    };
-    
-    const pedidoCr = this.pedidosRepository.create(pedido);
-    return await this.pedidosRepository.save(pedidoCr);
-  } catch (error) {
-    throw new HttpException(
-      `Ocurrió un error al intentar crear el pedido: ${error}`,
-      HttpStatus.BAD_REQUEST,
-    );
   }
-}
 
+  /**
+   * Esta función se utiliza para actualizar el total del pedido. Debe ser ejecutada
+   * justo después de correr la API addProductoAPedido, para que el total
+   * del pedido se actualice automáticamente al agregar un nuevo producto.
+   * @param id_pedido Llave primaria del pedido a actualizar
+   * @returns Pedido con total actualizado concorde al nuevo producto añadido al pedido
+   */
   async actualizarTotalPedido(id_pedido: number): Promise<UpdateResult> {
-  try {
-    // 1. Obtener todos los productos del pedido
-    const productos = await this.p_h_prRepository.find({
-      where: { pedido_id: { id_pedido: id_pedido } }
-    });
+    try {
+      // 1. Obtener todos los productos del pedido
+      const productos = await this.p_h_prRepository.find({
+        where: { pedido_id: { id_pedido: id_pedido } },
+      });
 
-    // 2. Calcular el total sumando todos los precios
-    const total = productos.reduce((sum, prod) => {
-      return sum + parseFloat(prod.precio.toString());
-    }, 0);
+      // 2. Calcular el total sumando todos los precios
+      const total = productos.reduce((sum, prod) => {
+        return sum + parseFloat(prod.precio.toString());
+      }, 0);
 
-    console.log(`Actualizando total del pedido ${id_pedido}: ${total}`);
+      console.log(`Actualizando total del pedido ${id_pedido}: ${total}`);
 
-    // 3. Actualizar el pedido con el total calculado
-    return await this.pedidosRepository.update(id_pedido, { 
-      total: parseFloat(total.toFixed(2)) 
-    });
-
-  } catch (error) {
-    throw new HttpException(
-      `Error al actualizar total del pedido ${id_pedido}: ${error}`,
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
+      // 3. Actualizar el pedido con el total calculado
+      return await this.pedidosRepository.update(id_pedido, {
+        total: parseFloat(total.toFixed(2)),
+      });
+    } catch (error) {
+      throw new HttpException(
+        `Error al actualizar total del pedido ${id_pedido}: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
-}
   /**
    * Esta función será utilizada en dos casos:
    * 1.- Cuando el usuario comience agregar productos en el pedido, presionando el botón de
@@ -355,7 +361,7 @@ export class PedidosService {
         producto_id: productoF,
         opcion_id: opcionF,
         precio: p_h_prDTO.precio,
-        estado: EstadoPedidoHasProductos.sin_preparar, // ✅ Estado por defecto explícito
+        estado: EstadoPedidoHasProductos.sin_preparar,
       };
 
       const p_h_prC = await this.p_h_prRepository.create(body);
@@ -410,8 +416,8 @@ export class PedidosService {
         }
       }
 
-    // Actualizar automáticamente el total del pedido
-    await this.actualizarTotalPedido(p_h_prDTO.pedido_id);
+      // Actualizar automáticamente el total del pedido
+      await this.actualizarTotalPedido(p_h_prDTO.pedido_id);
       this.pedidosGateway.nuevoPedido(p_h_prS);
       return p_h_prS;
     } catch (error) {
@@ -465,21 +471,25 @@ export class PedidosService {
    * Solo permite eliminar si el producto está en estado "Sin preparar"
    * @param pedido_prod_id ID del registro en pedidos_has_productos
    * @returns Resultado de la eliminación
-  */
+   */
   async eliminarProductoDelPedido(pedido_prod_id: number): Promise<any> {
     try {
-      console.log(`🗑️ Intentando eliminar producto con pedido_prod_id: ${pedido_prod_id}`);
-      
+      console.log(
+        `🗑️ Intentando eliminar producto con pedido_prod_id: ${pedido_prod_id}`,
+      );
+
       // 1. Verificar que el producto existe y obtener sus datos
       const productoEnPedido = await this.p_h_prRepository.findOne({
         where: { pedido_prod_id: pedido_prod_id },
-        relations: ['pedido_id', 'producto_id']
+        relations: ['pedido_id', 'producto_id'],
       });
 
       console.log(`📦 Producto encontrado:`, productoEnPedido);
 
       if (!productoEnPedido) {
-        console.log(`❌ No se encontró el producto con pedido_prod_id: ${pedido_prod_id}`);
+        console.log(
+          `❌ No se encontró el producto con pedido_prod_id: ${pedido_prod_id}`,
+        );
         throw new HttpException(
           `No se encontró el producto con ID ${pedido_prod_id} en el pedido`,
           HttpStatus.NOT_FOUND,
@@ -489,7 +499,9 @@ export class PedidosService {
       // 2. Verificar que el producto esté en estado "Sin preparar"
       console.log(`🔍 Estado actual del producto: ${productoEnPedido.estado}`);
       if (productoEnPedido.estado !== EstadoPedidoHasProductos.sin_preparar) {
-        console.log(`⚠️ El producto no se puede eliminar, estado: ${productoEnPedido.estado}`);
+        console.log(
+          `⚠️ El producto no se puede eliminar, estado: ${productoEnPedido.estado}`,
+        );
         throw new HttpException(
           `No se puede eliminar el producto porque ya está en estado: ${productoEnPedido.estado}`,
           HttpStatus.BAD_REQUEST,
@@ -505,9 +517,11 @@ export class PedidosService {
         .createQueryBuilder()
         .delete()
         .from(Pedidos_has_extrassel)
-        .where("pedido_prod_id = :pedido_prod_id", { pedido_prod_id: pedido_prod_id })
+        .where('pedido_prod_id = :pedido_prod_id', {
+          pedido_prod_id: pedido_prod_id,
+        })
         .execute();
-      
+
       console.log(`✅ Extras eliminados: ${extrasEliminados.affected}`);
 
       // 4. Eliminar ingredientes relacionados (usando el pedido_prod_id directamente)
@@ -516,14 +530,19 @@ export class PedidosService {
         .createQueryBuilder()
         .delete()
         .from(Pedidos_has_ingrsel)
-        .where("pedido_prod_id = :pedido_prod_id", { pedido_prod_id: pedido_prod_id })
+        .where('pedido_prod_id = :pedido_prod_id', {
+          pedido_prod_id: pedido_prod_id,
+        })
         .execute();
-      
-      console.log(`✅ Ingredientes eliminados: ${ingredientesEliminados.affected}`);
+
+      console.log(
+        `✅ Ingredientes eliminados: ${ingredientesEliminados.affected}`,
+      );
 
       // 5. Eliminar el producto del pedido
       console.log(`🗑️ Eliminando el producto principal...`);
-      const productoEliminado = await this.p_h_prRepository.delete(pedido_prod_id);
+      const productoEliminado =
+        await this.p_h_prRepository.delete(pedido_prod_id);
       console.log(`✅ Producto eliminado: ${productoEliminado.affected}`);
 
       // 6. Actualizar el total del pedido
@@ -535,12 +554,11 @@ export class PedidosService {
         pedido_prod_id: pedido_prod_id,
         pedido_id: pedidoId,
         extras_eliminados: extrasEliminados.affected,
-        ingredientes_eliminados: ingredientesEliminados.affected
+        ingredientes_eliminados: ingredientesEliminados.affected,
       };
 
       console.log(`🎉 Eliminación exitosa:`, resultado);
       return resultado;
-
     } catch (error) {
       console.error(`❌ Error en eliminarProductoDelPedido:`, error);
       if (error instanceof HttpException) {

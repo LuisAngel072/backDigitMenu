@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Sub_categorias } from './entities/sub_categorias.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { Categorias } from 'src/categorias/entities/categorias.entity';
 import { CrSubCategoriasDTO } from './dtos/cr-sub_cat.dto';
 import { UpSubCatDTO } from './dtos/up-sub_cat.dto';
@@ -95,7 +95,10 @@ export class SubCategoriasService {
     }
   }
 
-  async upSubCat(id_subcat: number, upSubCatDTO: UpSubCatDTO) {
+  async upSubCat(
+    id_subcat: number,
+    upSubCatDTO: UpSubCatDTO,
+  ): Promise<UpdateResult> {
     try {
       const subCatF = await this.getSubCategoria(id_subcat);
 
