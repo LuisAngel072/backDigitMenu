@@ -12,7 +12,13 @@ import { PedidosService } from './pedidos.service';
 import { CrPedidoDto } from './dtos/cr-pedido.dto';
 import { UpPedidoDto } from './dtos/up-pedido.dto';
 import { CrPedidosHasProductosDTO } from './dtos/cr-pedidos_has_productos.dto';
-import { EstadoPedidoHasProductos } from './entities/pedidos_has_productos.entity';
+import {
+  EstadoPedidoHasProductos,
+  Pedidos_has_productos,
+} from './entities/pedidos_has_productos.entity';
+import { Producto_extras_ingrSel } from './interfaces/producto_extras_ingr_sel.type';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Roles_validos } from 'src/usuarios/interfaces/roles_validos.enum';
 
 @Controller('pedidos')
 export class PedidosController {
@@ -23,11 +29,26 @@ export class PedidosController {
     return await this.pedidosService.getPedidos();
   }
 
-  @Get('/productos/:id_pedido')
+  @Get('activos/:rol')
+  async getPedidosActivosConDetalles(
+    @Param('rol') rol: string,
+  ): Promise<Producto_extras_ingrSel[]> {
+    return await this.pedidosService.getPedidosActivosConDetalles(rol);
+  }
+
+  @Get('/productos/extrasIngrs/:p_h_pr_id')
+  async getProductosExtrasIngrSel(
+    @Param('p_h_pr_id') p_h_pr_id: any,
+  ): Promise<Producto_extras_ingrSel> {
+    return await this.pedidosService.getExtrasIngrDeProducto(p_h_pr_id);
+  }
+
+  @Get('/productos/:id_pedido/:rol')
   async getProductosPedido(
     @Param('id_pedido', ParseIntPipe) id_pedido: number,
-  ) {
-    return await this.pedidosService.getProductosPedido(id_pedido);
+    @Param('rol') rol: string | null,
+  ): Promise<Pedidos_has_productos[]> {
+    return await this.pedidosService.getProductosPedido(id_pedido, rol);
   }
 
   @Get('/no_mesa/:no_mesa')
@@ -35,13 +56,6 @@ export class PedidosController {
     @Param('no_mesa', ParseIntPipe) no_mesa: number,
   ) {
     return await this.pedidosService.getPedidoIniciadoByNoMesa(no_mesa);
-  }
-
-  @Get('/productos/extrasIngrs/:p_h_pr_id')
-  async getProductosExtrasIngrSel(
-    @Param('p_h_pr_id', ParseIntPipe) p_h_pr_id: number,
-  ) {
-    return await this.pedidosService.getExtrasIngrDeProducto(p_h_pr_id);
   }
 
   @Post('registrar')
@@ -55,6 +69,7 @@ export class PedidosController {
   }
 
   @Patch('pedido_prod/actualizar/:pedido_prod_id')
+  @Auth(Roles_validos.cocinero, Roles_validos.cajero, Roles_validos.mesero)
   async cambiarEstado(
     @Param('pedido_prod_id', ParseIntPipe) pedido_prod_id: number,
     @Body('estado') estado: EstadoPedidoHasProductos,

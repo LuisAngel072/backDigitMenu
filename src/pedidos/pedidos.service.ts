@@ -87,20 +87,29 @@ export class PedidosService {
     }
   }
 
-  // Versión corregida del método getProductosPedido
+  /**
+   * Esta función recupera todos los productos que corresponden a un pedido, según el
+   * id_pedido proporcionado, además de al rol que correspondan, se entregarán los productos
+   * con X estado (revise EstadoProductosEnum) según las necesidades del rol
+   * @param id_pedido Llave primaria del pedido donde se recuperarán todos los productos
+   * @param rol Según el rol que pida, entregará solo los productos con X estado
+   * Para cocina: Sin entregar
+   * Para meseros: Sin entregar y preparados
+   * Para caja: Entregados
+   * Para ventas: Pagados
+   * Clientes (rol === null): Todos los demás
+   * @returns Pedidos_has_productos[] (los registros de la tabla pedidos_has_productos)
+   */
   async getProductosPedido(
     id_pedido: number,
+    rol: string,
   ): Promise<Pedidos_has_productos[]> {
     try {
-      console.log(`🔍 Buscando productos para pedido ID: ${id_pedido}`);
-
       // Primero verifica que el pedido existe
       const pedido = await this.pedidosRepository.findOne({
         where: { id_pedido: id_pedido },
         relations: ['no_mesa'],
       });
-
-      console.log(`📋 Pedido encontrado:`, pedido);
 
       if (!pedido) {
         throw new HttpException(
@@ -121,19 +130,40 @@ export class PedidosService {
         },
       });
 
-      console.log(`🍽️ Productos encontrados (${p_h_pr.length}):`, p_h_pr);
-
       if (!p_h_pr || p_h_pr.length === 0) {
-        // ✅ En lugar de lanzar error, devuelve array vacío
         console.log(
           `⚠️ No se encontraron productos para el pedido ${id_pedido}`,
         );
         return [];
       }
-
-      return p_h_pr;
+      if (rol === 'mesero') {
+        const response = p_h_pr.filter((p_h_pr) => {
+          return (
+            p_h_pr.estado === EstadoPedidoHasProductos.sin_preparar ||
+            p_h_pr.estado === EstadoPedidoHasProductos.preparado
+          );
+        });
+        return response;
+      } else if (rol === 'cocinero') {
+        const response = p_h_pr.filter((p_h_pr) => {
+          return p_h_pr.estado === EstadoPedidoHasProductos.sin_preparar;
+        });
+        return response;
+      } else if (rol === 'caja') {
+        const response = p_h_pr.filter((p_h_pr) => {
+          return p_h_pr.estado === EstadoPedidoHasProductos.entregado;
+        });
+        return response;
+      } else if (rol === 'ventas') {
+        const response = p_h_pr.filter((p_h_pr) => {
+          return p_h_pr.estado === EstadoPedidoHasProductos.pagado;
+        });
+        return response;
+      } else {
+        return p_h_pr;
+      }
     } catch (error) {
-      console.error(`❌ Error en getProductosPedido:`, error);
+      console.error(`Error en getProductosPedido:`, error);
       throw new HttpException(
         `Ocurrió un error al intentar obtener los productos del pedido: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -151,58 +181,153 @@ export class PedidosService {
   async getExtrasIngrDeProducto(
     p_h_pr_id: number,
   ): Promise<Producto_extras_ingrSel> {
-    try {
-      const p_h_prF: Pedidos_has_productos =
-        await this.p_h_prRepository.findOne({
-          where: { pedido_prod_id: p_h_pr_id },
-          relations: [
-            'opcion_id',
-            'producto_id',
-            'pedido_id',
-            'pedido_id.no_mesa',
-          ],
-        });
-      if (!p_h_prF) {
-        throw new HttpException(
-          'Producto en pedido no encontrado',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      const extrasSel = await this.p_h_exsRepository
-        .createQueryBuilder('e')
-        .leftJoinAndSelect('e.extra_id', 'extra')
-        .where('e.pedido_prod_id = :id', { id: p_h_pr_id })
-        .getMany();
+    // 1. Encontrar el producto principal en el pedido y sus relaciones directas
+    const p_h_pr = await this.p_h_prRepository.findOne({
+      where: { pedido_prod_id: p_h_pr_id },
+      relations: ['pedido_id', 'producto_id', 'opcion_id', 'pedido_id.no_mesa'],
+    });
 
-      const ingrSel = await this.p_h_ingrsRepository
-        .createQueryBuilder('i')
-        .leftJoinAndSelect('i.ingrediente_id', 'ingrediente')
-        .where('i.pedido_prod_id = :id', { id: p_h_pr_id })
-        .getMany();
-
-      const extras: Extras[] = extrasSel.map((extra) => extra.extra_id);
-      const ingredientes: Ingredientes[] = ingrSel.map(
-        (ingrediente) => ingrediente.ingrediente_id,
+    // Si no se encuentra, devolvemos un error 404 (Not Found) que es más específico
+    if (!p_h_pr) {
+      throw new HttpException(
+        `No se encontró el registro del producto en el pedido con id ${p_h_pr_id}`,
+        HttpStatus.NOT_FOUND,
       );
-      const body: Producto_extras_ingrSel = {
-        pedido_prod_id: p_h_prF.pedido_prod_id,
-        pedido_id: p_h_prF.pedido_id,
-        producto_id: p_h_prF.producto_id,
-        opcion_id: p_h_prF.opcion_id,
-        estado: p_h_prF.estado,
-        precio: p_h_prF.precio,
+    }
+
+    try {
+      // 2. Encontrar los extras e ingredientes en paralelo para mayor eficiencia
+      //    y cargar sus relaciones directamente para evitar más consultas.
+      const [extrasSel, ingrSel] = await Promise.all([
+        this.p_h_exsRepository.find({
+          where: { pedido_prod_id: { pedido_prod_id: p_h_pr_id } },
+          relations: ['extra_id'],
+        }),
+        this.p_h_ingrsRepository.find({
+          where: { pedido_prod_id: { pedido_prod_id: p_h_pr_id } },
+          relations: ['ingrediente_id'],
+        }),
+      ]);
+
+      // 3. Mapear los resultados directamente (ya no se necesitan más bucles ni consultas)
+      const extras = extrasSel.map((item) => item.extra_id);
+      const ingredientes = ingrSel.map((item) => item.ingrediente_id);
+
+      // 4. Construir y devolver la respuesta
+      const response: Producto_extras_ingrSel = {
+        pedido_prod_id: p_h_pr.pedido_prod_id,
+        pedido_id: p_h_pr.pedido_id,
+        producto_id: p_h_pr.producto_id,
+        estado: p_h_pr.estado,
+        precio: p_h_pr.precio,
+        opcion_id: p_h_pr.opcion_id,
         extras: extras,
         ingredientes: ingredientes,
       };
 
-      return body;
+      return response;
     } catch (error) {
+      // Registra el error original y completo en la consola del servidor para depuración
+      console.error(
+        `Error interno al procesar los detalles para pedido_prod_id ${p_h_pr_id}:`,
+        error,
+      );
+
+      // Devuelve un error 500 (Internal Server Error) que es más apropiado
       throw new HttpException(
-        `Ocurrió un error al intentar obtener los datos del producto sobre el pedido: ${error}`,
+        `Ocurrió un error interno al obtener los detalles del producto.`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+
+  /**
+   * Obtiene todos los pedidos activos ('No pagado') con sus productos
+   * y detalles en una sola operación, filtrando según el rol.
+   * @param rol El rol del usuario para filtrar los productos correspondientes.
+   * @returns Un array de pedidos estructurado con sus productos anidados.
+   */
+  async getPedidosActivosConDetalles(rol: string): Promise<any[]> {
+    // 1. Definir los estados de los productos a buscar según el rol
+    let estadosPermitidos: EstadoPedidoHasProductos[];
+    switch (rol) {
+      case 'mesero':
+        estadosPermitidos = [
+          EstadoPedidoHasProductos.sin_preparar,
+          EstadoPedidoHasProductos.preparado,
+        ];
+        break;
+      case 'cocinero':
+        estadosPermitidos = [EstadoPedidoHasProductos.sin_preparar];
+        break;
+      case 'caja':
+        estadosPermitidos = [EstadoPedidoHasProductos.entregado];
+        break;
+      case 'ventas':
+        estadosPermitidos = [EstadoPedidoHasProductos.pagado];
+        break;
+      default:
+        estadosPermitidos = Object.values(EstadoPedidoHasProductos);
+        break;
+    }
+
+    // 2. Obtener todos los productos de pedidos activos en una ÚNICA consulta
+    const productosDePedidos = await this.p_h_prRepository
+      .createQueryBuilder('php')
+      .leftJoinAndSelect('php.pedido_id', 'pedido')
+      .leftJoinAndSelect('pedido.no_mesa', 'mesa')
+      .leftJoinAndSelect('php.producto_id', 'producto')
+      .leftJoinAndSelect('php.opcion_id', 'opcion')
+      .leftJoinAndSelect('php.extras', 'extrasSel')
+      .leftJoinAndSelect('extrasSel.extra_id', 'extra')
+      .leftJoinAndSelect('php.ingredientes', 'ingrSel')
+      .leftJoinAndSelect('ingrSel.ingrediente_id', 'ingrediente')
+      // Filtramos para obtener solo productos de pedidos 'No pagado' y con el estado correcto
+      .where('pedido.estado = :estadoPedido', {
+        estadoPedido: 'No pagado', // Asegúrate que el string coincida con tu Enum
+      })
+      .andWhere('php.estado IN (:...estadosPermitidos)', { estadosPermitidos })
+      .getMany();
+
+    // 3. Estructurar la respuesta final en el formato que el frontend espera
+    const pedidosMap = new Map<number, any>();
+
+    productosDePedidos.forEach((producto) => {
+      const pedidoId = producto.pedido_id.id_pedido;
+
+      // Si el pedido no está en el mapa, lo inicializamos
+      if (!pedidosMap.has(pedidoId)) {
+        pedidosMap.set(pedidoId, {
+          pedidoId: producto.pedido_id, // El objeto Pedidos completo
+          productos: [],
+          expandido: true, // Por defecto para la vista
+          tieneProductosPendientes: false,
+        });
+      }
+
+      const pedidoActual = pedidosMap.get(pedidoId);
+
+      // Añadimos el producto formateado a la lista de su pedido
+      pedidoActual.productos.push({
+        pedido_prod_id: producto.pedido_prod_id,
+        estado: producto.estado,
+        precio: producto.precio,
+        opcion_id: producto.opcion_id,
+        producto_id: producto.producto_id,
+        extras: producto.extras.map((e) => e.extra_id),
+        ingredientes: producto.ingredientes.map((i) => i.ingrediente_id),
+      });
+
+      // Actualizamos el flag de productos pendientes si es necesario
+      if (producto.estado === EstadoPedidoHasProductos.sin_preparar) {
+        pedidoActual.tieneProductosPendientes = true;
+      }
+    });
+
+    // Convertimos el mapa de nuevo a un array para la respuesta final
+    return Array.from(pedidosMap.values());
+  }
+
   /**
    * Esta función es llamada cuando el cliente ingresa a la aplicación.
    * Una vez entrado en la aplicación (oprimió el botón de empezar),

@@ -10,7 +10,7 @@ import {
 import { Pedidos_has_productos } from './pedidos_has_productos.entity';
 
 export enum EstadoPedido {
-  iniciado = 'Iniciado',
+  no_pagado = 'No pagado',
   pagado = 'Pagado',
 }
 
@@ -38,6 +38,14 @@ export class Pedidos {
     default: 0,
   })
   total: number;
+
+  @Column({
+    name: 'estado',
+    type: 'enum',
+    enum: EstadoPedido,
+    default: EstadoPedido.no_pagado,
+  })
+  estado: EstadoPedido;
 
   @OneToMany(() => Pedidos_has_productos, (p_h_p) => p_h_p.pedido_id)
   p_h_p: Pedidos_has_productos;
