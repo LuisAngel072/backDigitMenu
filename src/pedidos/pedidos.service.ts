@@ -19,6 +19,7 @@ import { Ingredientes } from 'src/ingredientes/entities/ingredientes.entity';
 import { Opciones } from 'src/opciones/entities/opciones.entity';
 import { Producto_extras_ingrSel } from './interfaces/producto_extras_ingr_sel.type';
 import { PedidosGateway } from './gateways/pedidos.gateway';
+import { PedidoAgrupado } from './interfaces/pedidosAgrupados.interface';
 
 @Injectable()
 export class PedidosService {
@@ -247,7 +248,7 @@ export class PedidosService {
    * @param rol El rol del usuario para filtrar los productos correspondientes.
    * @returns Un array de pedidos estructurado con sus productos anidados.
    */
-  async getPedidosActivosConDetalles(rol: string): Promise<any[]> {
+  async getPedidosActivosConDetalles(rol: string): Promise<PedidoAgrupado[]> {
     // 1. Definir los estados de los productos a buscar según el rol
     let estadosPermitidos: EstadoPedidoHasProductos[];
     switch (rol) {
@@ -284,7 +285,7 @@ export class PedidosService {
       .leftJoinAndSelect('ingrSel.ingrediente_id', 'ingrediente')
       // Filtramos para obtener solo productos de pedidos 'No pagado' y con el estado correcto
       .where('pedido.estado = :estadoPedido', {
-        estadoPedido: 'No pagado', // Asegúrate que el string coincida con tu Enum
+        estadoPedido: 'No pagado',
       })
       .andWhere('php.estado IN (:...estadosPermitidos)', { estadosPermitidos })
       .getMany();

@@ -19,6 +19,7 @@ import {
 import { Producto_extras_ingrSel } from './interfaces/producto_extras_ingr_sel.type';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Roles_validos } from 'src/usuarios/interfaces/roles_validos.enum';
+import { PedidoAgrupado } from './interfaces/pedidosAgrupados.interface';
 
 @Controller('pedidos')
 export class PedidosController {
@@ -32,7 +33,7 @@ export class PedidosController {
   @Get('activos/:rol')
   async getPedidosActivosConDetalles(
     @Param('rol') rol: string,
-  ): Promise<Producto_extras_ingrSel[]> {
+  ): Promise<PedidoAgrupado[]> {
     return await this.pedidosService.getPedidosActivosConDetalles(rol);
   }
 
