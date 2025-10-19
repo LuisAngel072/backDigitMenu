@@ -15,7 +15,7 @@ import { Ingredientes } from '../ingredientes/entities/ingredientes.entity';
 import { Opciones } from '../opciones/entities/opciones.entity';
 import { PedidosGateway } from './gateways/pedidos.gateway';
 
-// 1. CREACIÓN DE MOCKS (Ahora completos)
+// 1. CREACIÓN DE MOCKS
 const mockPedidosRepository = { find: jest.fn() };
 const mockPHPrRepository = {
   createQueryBuilder: jest.fn(),
@@ -37,7 +37,7 @@ describe('PedidosService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PedidosService, // El servicio real que queremos probar
-        // ✅ Proveemos TODOS los mocks necesarios
+        //Proveemos TODOS los mocks necesarios
         {
           provide: getRepositoryToken(Pedidos),
           useValue: mockPedidosRepository,

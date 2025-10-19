@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Pedidos } from './entities/pedidos.entity';
 import { Repository, UpdateResult } from 'typeorm';
@@ -23,6 +23,8 @@ import { PedidoAgrupado } from './interfaces/pedidosAgrupados.interface';
 
 @Injectable()
 export class PedidosService {
+  private readonly logger = new Logger(PedidosService.name);
+
   constructor(
     private readonly pedidosGateway: PedidosGateway,
     @InjectRepository(Pedidos)
@@ -544,7 +546,19 @@ export class PedidosService {
 
       // Actualizar automáticamente el total del pedido
       await this.actualizarTotalPedido(p_h_prDTO.pedido_id);
-      this.pedidosGateway.nuevoPedido(p_h_prS);
+      this.logger.log(
+        `Producto ${p_h_prS.pedido_prod_id} añadido al pedido ${pedidoF.id_pedido}. Emitiendo evento...`,
+      );
+      const detallesParaEmitir = await this._obtenerDetallesCompletosProducto(
+        p_h_prS.pedido_prod_id,
+      );
+      if (detallesParaEmitir) {
+        this.pedidosGateway.emitirNuevoProducto(detallesParaEmitir);
+      } else {
+        this.logger.warn(
+          `No se pudieron obtener detalles completos para el producto ${p_h_prS.pedido_prod_id} al añadir.`,
+        );
+      }
       return p_h_prS;
     } catch (error) {
       throw new HttpException(
@@ -567,6 +581,10 @@ export class PedidosService {
     estado: EstadoPedidoHasProductos,
   ): Promise<UpdateResult> {
     try {
+      this.logger.log(
+        `Intentando cambiar estado del producto ${pedido_prod_id} a ${estado}`,
+      );
+
       const p_h_pr = await this.p_h_prRepository.findOne({
         where: { pedido_prod_id: pedido_prod_id },
       });
@@ -581,6 +599,21 @@ export class PedidosService {
       const p_h_prU = await this.p_h_prRepository.update(pedido_prod_id, {
         estado: estado,
       });
+
+      if (estado !== EstadoPedidoHasProductos.pagado) {
+        this.logger.log(`Estado relevante (${estado}), emitiendo evento...`);
+        const detallesParaEmitir =
+          await this._obtenerDetallesCompletosProducto(pedido_prod_id);
+        if (detallesParaEmitir) {
+          this.pedidosGateway.emitirEstadoActualizado(detallesParaEmitir);
+        } else {
+          this.logger.warn(
+            `No se pudieron obtener detalles completos para el producto ${pedido_prod_id} al cambiar estado.`,
+          );
+        }
+      } else {
+        this.logger.log(`Estado ${estado} no requiere emisión de evento.`);
+      }
 
       return p_h_prU;
     } catch (error) {
@@ -695,5 +728,47 @@ export class PedidosService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  /**
+   * Obtiene los detalles completos de un producto
+   * en el formato esperado por el frontend para emitir por WebSocket.
+   * @param pedido_prod_id ID del registro en pedidos_has_productos
+   * @returns Objeto con estructura similar a Producto_extras_ingrSel, incluyendo el pedido completo.
+   */
+  private async _obtenerDetallesCompletosProducto(
+    pedido_prod_id: number,
+  ): Promise<Producto_extras_ingrSel | null> {
+    const producto = await this.p_h_prRepository.findOne({
+      where: { pedido_prod_id: pedido_prod_id },
+      relations: [
+        'pedido_id', // Carga el pedido asociado
+        'pedido_id.no_mesa', // Carga la mesa DENTRO del pedido
+        'producto_id', // Carga el producto base
+        'opcion_id', // Carga la opción seleccionada
+        'extras', // Carga la entidad intermedia Pedidos_has_extrassel
+        'extras.extra_id', // Carga la entidad Extra DENTRO de la intermedia
+        'ingredientes', // Carga la entidad intermedia Pedidos_has_ingrsel
+        'ingredientes.ingrediente_id', // Carga la entidad Ingrediente DENTRO de la intermedia
+      ],
+    });
+
+    if (!producto) {
+      return null;
+    }
+
+    // Mapeamos para que coincida con la interfaz Producto_extras_ingrSel
+    const productoFormateado: Producto_extras_ingrSel = {
+      pedido_prod_id: producto.pedido_prod_id,
+      pedido_id: producto.pedido_id, // Objeto Pedido completo (incluye no_mesa)
+      producto_id: producto.producto_id,
+      estado: producto.estado,
+      precio: producto.precio,
+      opcion_id: producto.opcion_id,
+      extras: producto.extras.map((e) => e.extra_id), // Solo los objetos Extras
+      ingredientes: producto.ingredientes.map((i) => i.ingrediente_id), // Solo los objetos Ingredientes
+    };
+
+    return productoFormateado;
   }
 }
