@@ -26,7 +26,9 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix('api');
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  const staticAssetsPath = join(process.cwd(), 'uploads');
+  console.log(`Intentando servir estáticos desde: ${staticAssetsPath}`); // Log para verificar
+  app.useStaticAssets(staticAssetsPath, {
     prefix: '/uploads/',
   });
 
