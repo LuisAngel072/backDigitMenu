@@ -11,7 +11,14 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { Producto_extras_ingrSel } from '../interfaces/producto_extras_ingr_sel.type';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    // Puedes mantener esta configuración CORS específica o quitarla y confiar en el Adapter
+    origin: 'http://localhost:4200',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+})
 export class PedidosGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
