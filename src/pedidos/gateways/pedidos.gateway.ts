@@ -1,47 +1,54 @@
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { Pedidos_has_productos } from '../entities/pedidos_has_productos.entity';
+// pedidos.gateway.ts
+
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { Producto_extras_ingrSel } from '../interfaces/producto_extras_ingr_sel.type';
 
-@WebSocketGateway({ cors: true })
-export class PedidosGateway {
+@WebSocketGateway()
+export class PedidosGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
   private readonly logger = new Logger(PedidosGateway.name);
 
-  nuevoPedido(pedido: Pedidos_has_productos) {
-    this.server.emit('nuevoPedido', pedido);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  afterInit(server: Server) {
+    this.logger.log('✅ PedidosGateway Inicializado Correctamente');
   }
 
-  // Emitir evento al actualizar estado
-  actualizarPedido(pedido: any) {
-    this.server.emit('pedido_actualizado', pedido);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  handleConnection(client: Socket, ...args: any[]) {
+    this.logger.log(
+      `🔌 INTENTO de conexión: Cliente ID ${client.id} desde ${client.handshake.address}`,
+    );
+    // ... tu lógica actual ...
   }
 
-  /**
-   * Emite un evento cuando se añade un nuevo producto a un pedido.
-   * @param productoCompleto Datos del producto añadido, formateados como Producto_extras_ingrSel.
-   */
+  handleDisconnect(client: Socket) {
+    this.logger.log(`🔌 Cliente DESCONECTADO: ${client.id}`);
+  }
+
+  // --- Tus métodos emitirNuevoProducto y emitirEstadoActualizado (sin cambios) ---
   emitirNuevoProducto(productoCompleto: Producto_extras_ingrSel) {
     this.logger.log(
       `Emitiendo 'nuevoProducto' para producto ID: ${productoCompleto.pedido_prod_id}`,
     );
-    // Emitimos a todos los clientes conectados.
-    // En el futuro, podrías emitir a salas específicas (ej. 'cocineros', 'meseros').
     this.server.emit('nuevoProducto', productoCompleto);
   }
 
-  /**
-   * Emite un evento cuando el estado de un producto cambia (a Preparado o Entregado).
-   * @param productoActualizado Datos del producto actualizado, formateados como Producto_extras_ingrSel.
-   */
   emitirEstadoActualizado(productoActualizado: Producto_extras_ingrSel) {
     this.logger.log(
       `Emitiendo 'estadoActualizado' para producto ID: ${productoActualizado.pedido_prod_id} (Nuevo estado: ${productoActualizado.estado})`,
     );
-    // Emitimos a todos los clientes conectados.
     this.server.emit('estadoActualizado', productoActualizado);
   }
 }
