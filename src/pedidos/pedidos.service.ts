@@ -245,7 +245,7 @@ export class PedidosService {
   }
 
   /**
-   * Obtiene todos los pedidos activos ('No pagado') con sus productos
+   * Obtiene todos los pedidos activos con sus productos
    * y detalles en una sola operación, filtrando según el rol.
    * @param rol El rol del usuario para filtrar los productos correspondientes.
    * @returns Un array de pedidos estructurado con sus productos anidados.
@@ -275,60 +275,121 @@ export class PedidosService {
     }
 
     // 2. Obtener todos los productos de pedidos activos en una ÚNICA consulta
-    const productosDePedidos = await this.p_h_prRepository
-      .createQueryBuilder('php')
-      .leftJoinAndSelect('php.pedido_id', 'pedido')
-      .leftJoinAndSelect('pedido.no_mesa', 'mesa')
-      .leftJoinAndSelect('php.producto_id', 'producto')
-      .leftJoinAndSelect('php.opcion_id', 'opcion')
-      .leftJoinAndSelect('php.extras', 'extrasSel')
-      .leftJoinAndSelect('extrasSel.extra_id', 'extra')
-      .leftJoinAndSelect('php.ingredientes', 'ingrSel')
-      .leftJoinAndSelect('ingrSel.ingrediente_id', 'ingrediente')
-      // Filtramos para obtener solo productos de pedidos 'No pagado' y con el estado correcto
-      .where('pedido.estado = :estadoPedido', {
-        estadoPedido: 'No pagado',
-      })
-      .andWhere('php.estado IN (:...estadosPermitidos)', { estadosPermitidos })
-      .getMany();
+    if (rol !== 'ventas') {
+      const productosDePedidos = await this.p_h_prRepository
+        .createQueryBuilder('php')
+        .leftJoinAndSelect('php.pedido_id', 'pedido')
+        .leftJoinAndSelect('pedido.no_mesa', 'mesa')
+        .leftJoinAndSelect('php.producto_id', 'producto')
+        .leftJoinAndSelect('php.opcion_id', 'opcion')
+        .leftJoinAndSelect('php.extras', 'extrasSel')
+        .leftJoinAndSelect('extrasSel.extra_id', 'extra')
+        .leftJoinAndSelect('php.ingredientes', 'ingrSel')
+        .leftJoinAndSelect('ingrSel.ingrediente_id', 'ingrediente')
+        // Filtramos para obtener solo productos de pedidos 'No pagado' y con el estado correcto
+        .where('pedido.estado = :estadoPedido', {
+          estadoPedido: 'No pagado',
+        })
+        .andWhere('php.estado IN (:...estadosPermitidos)', {
+          estadosPermitidos,
+        })
+        .getMany();
 
-    // 3. Estructurar la respuesta final en el formato que el frontend espera
-    const pedidosMap = new Map<number, any>();
+      // 3. Estructurar la respuesta final en el formato que el frontend espera
+      const pedidosMap = new Map<number, any>();
 
-    productosDePedidos.forEach((producto) => {
-      const pedidoId = producto.pedido_id.id_pedido;
+      productosDePedidos.forEach((producto) => {
+        const pedidoId = producto.pedido_id.id_pedido;
 
-      // Si el pedido no está en el mapa, lo inicializamos
-      if (!pedidosMap.has(pedidoId)) {
-        pedidosMap.set(pedidoId, {
-          pedidoId: producto.pedido_id, // El objeto Pedidos completo
-          productos: [],
-          expandido: true, // Por defecto para la vista
-          tieneProductosPendientes: false,
+        // Si el pedido no está en el mapa, lo inicializamos
+        if (!pedidosMap.has(pedidoId)) {
+          pedidosMap.set(pedidoId, {
+            pedidoId: producto.pedido_id, // El objeto Pedidos completo
+            productos: [],
+            expandido: true, // Por defecto para la vista
+            tieneProductosPendientes: false,
+          });
+        }
+
+        const pedidoActual = pedidosMap.get(pedidoId);
+
+        // Añadimos el producto formateado a la lista de su pedido
+        pedidoActual.productos.push({
+          pedido_prod_id: producto.pedido_prod_id,
+          estado: producto.estado,
+          precio: producto.precio,
+          opcion_id: producto.opcion_id,
+          producto_id: producto.producto_id,
+          extras: producto.extras.map((e) => e.extra_id),
+          ingredientes: producto.ingredientes.map((i) => i.ingrediente_id),
         });
-      }
 
-      const pedidoActual = pedidosMap.get(pedidoId);
-
-      // Añadimos el producto formateado a la lista de su pedido
-      pedidoActual.productos.push({
-        pedido_prod_id: producto.pedido_prod_id,
-        estado: producto.estado,
-        precio: producto.precio,
-        opcion_id: producto.opcion_id,
-        producto_id: producto.producto_id,
-        extras: producto.extras.map((e) => e.extra_id),
-        ingredientes: producto.ingredientes.map((i) => i.ingrediente_id),
+        // Actualizamos el flag de productos pendientes si es necesario
+        if (producto.estado === EstadoPedidoHasProductos.sin_preparar) {
+          pedidoActual.tieneProductosPendientes = true;
+        }
       });
 
-      // Actualizamos el flag de productos pendientes si es necesario
-      if (producto.estado === EstadoPedidoHasProductos.sin_preparar) {
-        pedidoActual.tieneProductosPendientes = true;
-      }
-    });
+      // Convertimos el mapa de nuevo a un array para la respuesta final
+      return Array.from(pedidosMap.values());
+    } else {
+      const productosDePedidos = await this.p_h_prRepository
+        .createQueryBuilder('php')
+        .leftJoinAndSelect('php.pedido_id', 'pedido')
+        .leftJoinAndSelect('pedido.no_mesa', 'mesa')
+        .leftJoinAndSelect('php.producto_id', 'producto')
+        .leftJoinAndSelect('php.opcion_id', 'opcion')
+        .leftJoinAndSelect('php.extras', 'extrasSel')
+        .leftJoinAndSelect('extrasSel.extra_id', 'extra')
+        .leftJoinAndSelect('php.ingredientes', 'ingrSel')
+        .leftJoinAndSelect('ingrSel.ingrediente_id', 'ingrediente')
+        // Filtramos para obtener solo productos de pedidos 'No pagado' y con el estado correcto
+        .where('pedido.estado = :estadoPedido', {
+          estadoPedido: 'Pagado',
+        })
+        .andWhere('php.estado IN (:...estadosPermitidos)', {
+          estadosPermitidos,
+        })
+        .getMany();
 
-    // Convertimos el mapa de nuevo a un array para la respuesta final
-    return Array.from(pedidosMap.values());
+      // 3. Estructurar la respuesta final en el formato que el frontend espera
+      const pedidosMap = new Map<number, any>();
+
+      productosDePedidos.forEach((producto) => {
+        const pedidoId = producto.pedido_id.id_pedido;
+
+        // Si el pedido no está en el mapa, lo inicializamos
+        if (!pedidosMap.has(pedidoId)) {
+          pedidosMap.set(pedidoId, {
+            pedidoId: producto.pedido_id, // El objeto Pedidos completo
+            productos: [],
+            expandido: true, // Por defecto para la vista
+            tieneProductosPendientes: false,
+          });
+        }
+
+        const pedidoActual = pedidosMap.get(pedidoId);
+
+        // Añadimos el producto formateado a la lista de su pedido
+        pedidoActual.productos.push({
+          pedido_prod_id: producto.pedido_prod_id,
+          estado: producto.estado,
+          precio: producto.precio,
+          opcion_id: producto.opcion_id,
+          producto_id: producto.producto_id,
+          extras: producto.extras.map((e) => e.extra_id),
+          ingredientes: producto.ingredientes.map((i) => i.ingrediente_id),
+        });
+
+        // Actualizamos el flag de productos pendientes si es necesario
+        if (producto.estado === EstadoPedidoHasProductos.sin_preparar) {
+          pedidoActual.tieneProductosPendientes = true;
+        }
+      });
+
+      // Convertimos el mapa de nuevo a un array para la respuesta final
+      return Array.from(pedidosMap.values());
+    }
   }
 
   /**

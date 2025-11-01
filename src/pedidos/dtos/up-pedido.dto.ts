@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { EstadoPedido } from '../entities/pedidos.entity';
 
 export class UpPedidoDto {
@@ -6,4 +6,7 @@ export class UpPedidoDto {
   @IsOptional()
   total: number;
 
+  @IsEnum(EstadoPedido)
+  @IsOptional()
+  estado: EstadoPedido;
 }
