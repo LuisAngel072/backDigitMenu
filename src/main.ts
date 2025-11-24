@@ -27,6 +27,12 @@ async function bootstrap() {
     }),
   );
 
+  // Define los niveles de log según el entorno
+  const logLevels =
+    process.env.PRODUCTION === 'true'
+      ? ['error', 'warn'] // En producción solo errores y alertas
+      : ['log', 'error', 'warn', 'debug', 'verbose']; // En desarrollo todo
+  app.useLogger(logLevels as any);
   app.setGlobalPrefix('api');
 
   // Static Assets (Sin cambios)

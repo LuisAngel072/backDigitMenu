@@ -31,7 +31,7 @@ export class ExtrasController {
   @Auth(Roles_validos.admin)
   @Post('registrar')
   async crExtra(@Body() crExtraDto: CrExtrasDto) {
-    console.log(crExtraDto)
+    console.log(crExtraDto);
     return await this.extrasService.crExtra(crExtraDto);
   }
 

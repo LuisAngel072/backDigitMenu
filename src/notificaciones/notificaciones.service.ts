@@ -36,7 +36,7 @@ export class NotificacionesService {
     if (dto.estado) {
       notif.estado = dto.estado;
     }
-    
+
     // Si viene encargado_por, lo asignamos
     if (dto.encargado_por) {
       notif.encargado_por = dto.encargado_por;

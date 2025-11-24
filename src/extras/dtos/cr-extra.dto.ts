@@ -5,6 +5,6 @@ export class CrExtrasDto {
   nombre_extra: string;
 
   @IsNumber()
-  @Min(0, {message:'El precio debe ser mayor o igual a 0'})
+  @Min(0, { message: 'El precio debe ser mayor o igual a 0' })
   precio: number;
 }

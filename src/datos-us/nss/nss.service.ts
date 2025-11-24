@@ -26,7 +26,7 @@ export class NssService {
       if (await nssF) return nssF;
       else {
         if (!nssDTO.nss || nssDTO.nss === null) {
-            nssDTO.nss = 'NO ASIGNADO'
+          nssDTO.nss = 'NO ASIGNADO';
         }
         const nssN = this.nssRepository.create(nssDTO);
         await this.nssRepository.save(nssN);

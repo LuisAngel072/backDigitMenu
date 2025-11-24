@@ -12,6 +12,9 @@ export class Categorias {
   @Column({ name: 'ruta_img', length: 255, nullable: true })
   ruta_img: string;
 
-  @OneToMany(() => Sub_categorias, (sub_categoria) => sub_categoria.categoria_id)
+  @OneToMany(
+    () => Sub_categorias,
+    (sub_categoria) => sub_categoria.categoria_id,
+  )
   sub_categoria: Sub_categorias;
 }

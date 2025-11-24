@@ -8,6 +8,6 @@ import { Productos_has_opciones } from 'src/productos/entities/productos_has_opc
 @Module({
   controllers: [OpcionesController],
   providers: [OpcionesService],
-  imports: [TypeOrmModule.forFeature([Opciones, Productos_has_opciones])]
+  imports: [TypeOrmModule.forFeature([Opciones, Productos_has_opciones])],
 })
 export class OpcionesModule {}

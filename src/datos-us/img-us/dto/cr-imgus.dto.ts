@@ -1,6 +1,6 @@
-import { IsString } from "class-validator";
+import { IsString } from 'class-validator';
 
 export class CreateImgUsDTO {
-    @IsString()
-    img_ruta: string;
+  @IsString()
+  img_ruta: string;
 }

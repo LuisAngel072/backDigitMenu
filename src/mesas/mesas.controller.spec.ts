@@ -38,7 +38,7 @@ describe('MesasController', () => {
     it('should return an array of mesas', async () => {
       const result = [{ id_mesa: 1, no_mesa: 1, qr_code_url: 'url1' }];
       mockMesasService.findAll.mockResolvedValue(result);
-      
+
       expect(await controller.findAll()).toBe(result);
       expect(mockMesasService.findAll).toHaveBeenCalled();
     });
@@ -48,14 +48,14 @@ describe('MesasController', () => {
     it('should return a single mesa', async () => {
       const result = { id_mesa: 1, no_mesa: 1, qr_code_url: 'url1' };
       mockMesasService.findOne.mockResolvedValue(result);
-      
+
       expect(await controller.findOne(1)).toBe(result);
       expect(mockMesasService.findOne).toHaveBeenCalledWith(1);
     });
 
     it('should throw NotFoundException when mesa does not exist', async () => {
       mockMesasService.findOne.mockResolvedValue(null);
-      
+
       await expect(controller.findOne(999)).rejects.toThrow(NotFoundException);
       expect(mockMesasService.findOne).toHaveBeenCalledWith(999);
     });
