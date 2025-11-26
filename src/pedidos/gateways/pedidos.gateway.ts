@@ -14,7 +14,7 @@ import { Producto_extras_ingrSel } from '../interfaces/producto_extras_ingr_sel.
 @WebSocketGateway({
   cors: {
     // Puedes mantener esta configuración CORS específica o quitarla y confiar en el Adapter
-    origin: 'http://localhost:4200',
+    origin: '*',
     methods: ['GET', 'POST'],
     credentials: true,
   },
