@@ -21,11 +21,24 @@ import { extname } from 'path';
 export class SubCategoriasController {
   constructor(private readonly subCatService: SubCategoriasService) {}
 
+  /**
+   * Obtiene una lista de todas las subcategorías.
+   * Esta es una API pública que no requiere autenticación.
+   * API: GET /sub-categorias
+   * @returns Un arreglo de objetos de subcategorías.
+   */
   @Get()
   async obtenerSubCategorias() {
     return await this.subCatService.getSubCategorias();
   }
 
+  /**
+   * Obtiene una subcategoría específica por su ID.
+   * Esta es una API pública que no requiere autenticación.
+   * API: GET /sub-categorias/:id_subcat
+   * @param id_subcat El ID de la subcategoría a obtener.
+   * @returns El objeto de la subcategoría solicitada.
+   */
   @Get(':id_subcat')
   async obtenerSubCategoria(
     @Param('id_subcat', ParseIntPipe) id_subcat: number,
@@ -33,11 +46,26 @@ export class SubCategoriasController {
     return await this.subCatService.getSubCategoria(id_subcat);
   }
 
+  /**
+   * Registra una nueva subcategoría en la base de datos.
+   * Esta es una API pública que no requiere autenticación.
+   * API: POST /sub-categorias/registrar
+   * @param subCatDto DTO con la información para crear la nueva subcategoría.
+   * @returns La nueva subcategoría creada.
+   */
   @Post('registrar')
   async registarSubCategoria(@Body() subCatDto: CrSubCategoriasDTO) {
     return await this.subCatService.crSubCat(subCatDto);
   }
 
+  /**
+   * Edita una subcategoría existente.
+   * Esta es una API pública que no requiere autenticación.
+   * API: PATCH /sub-categorias/editar/:id_subcat
+   * @param id_subcat El ID de la subcategoría a editar.
+   * @param upSubCatDTO DTO con los datos para actualizar la subcategoría.
+   * @returns La subcategoría actualizada.
+   */
   @Patch('editar/:id_subcat')
   async editarSubcategoria(
     @Param('id_subcat', ParseIntPipe) id_subcat: number,
@@ -46,6 +74,13 @@ export class SubCategoriasController {
     return await this.subCatService.upSubCat(id_subcat, upSubCatDTO);
   }
 
+  /**
+   * Elimina una subcategoría específica por su ID.
+   * Esta es una API pública que no requiere autenticación.
+   * API: DELETE /sub-categorias/eliminar/:id_subcat
+   * @param id_subcat El ID de la subcategoría a eliminar.
+   * @returns Una confirmación de la eliminación.
+   */
   @Delete('eliminar/:id_subcat')
   async eliminarSubcategoria(
     @Param('id_subcat', ParseIntPipe) id_subcat: number,
@@ -53,6 +88,13 @@ export class SubCategoriasController {
     return await this.subCatService.delSubCat(id_subcat);
   }
 
+  /**
+   * Sube un archivo de imagen para una subcategoría.
+   * Esta es una API pública que no requiere autenticación.
+   * API: POST /sub-categorias/subir-img_subcat
+   * @param file El archivo de imagen a subir.
+   * @returns Un objeto que contiene la ruta del archivo guardado.
+   */
   @Post('subir-img_subcat')
   @UseInterceptors(
     FileInterceptor('file', {

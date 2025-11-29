@@ -4,7 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTelefonosDTO } from './dtos/cr_tel.dto';
 import { UpTelDto } from './dtos/up_tel.dto';
-
+/**
+ * Servicio para la gestión de teléfonos. Proporciona métodos para crear, obtener y actualizar registros de teléfonos en la base de datos.
+ * No cuenta con métodos para eliminar registros de teléfonos, ya que generalmente
+ * estos se mantienen en la base de datos por razones históricas y de integridad
+ * referencial con otros registros que puedan estar asociados a un teléfono específico.
+ * No cuenta con un controlador debido a que solo es llamado
+ * por UsuariosService al momento de crear o actualizar un usuario.
+ */
 @Injectable()
 export class TelefonoService {
   constructor(
@@ -26,6 +33,11 @@ export class TelefonoService {
     }
   }
 
+  /**
+   * Crea un nuevo registro de telefono si no existe uno con el mismo numero
+   * @param telDTO DTO para crear un nuevo telefono
+   * @returns Telefono existente o creado
+   */
   async crTel(telDTO: CreateTelefonosDTO) {
     try {
       const telF = await this.getTel(telDTO.telefono);
@@ -41,7 +53,12 @@ export class TelefonoService {
       );
     }
   }
-
+  /**
+   * Actualiza un registro de telefono existente
+   * @param id_telefono Id del telefono a actualizar
+   * @param telDTO Cuerpo de UpTelDto en dto/up_tel.dto.ts
+   * @returns Telefono actualizado
+   */
   async upTel(id_telefono: number, telDTO: UpTelDto) {
     try {
       const telF = await this.telRepository.findOne({

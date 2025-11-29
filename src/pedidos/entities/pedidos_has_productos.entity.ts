@@ -48,7 +48,6 @@ export class Pedidos_has_productos {
   @JoinColumn({ name: 'opcion_id' })
   opcion_id: Opciones;
 
-  // ✅ CORREGIDO: Relaciones OneToMany deben apuntar al campo correcto y ser arrays
   @OneToMany(() => Pedidos_has_extrassel, (p_h_es) => p_h_es.pedido_prod_id)
   extras: Pedidos_has_extrassel[];
 

@@ -27,6 +27,12 @@ export class UsuariosService {
     private readonly rolesService: RolesService,
   ) {}
 
+  /**
+   * @description Funcionalidad principal: Encuentra un usuario específico por su código único.
+   * @description Métodos de realización: Utiliza el método `findOne` del `usuariosRepository` para buscar un usuario que coincida con el `codigo`. Incluye la relación con la imagen de perfil. Si no lo encuentra, lanza una excepción `HttpException`.
+   * @param {string} codigo - El código único del usuario a buscar.
+   * @returns {Promise<Usuarios>} Una promesa que se resuelve con el objeto del usuario encontrado.
+   */
   async encontrarUnUsuario(codigo: string) {
     try {
       const usuario = this.usuariosRepository.findOne({
@@ -46,6 +52,11 @@ export class UsuariosService {
     }
   }
 
+  /**
+   * @description Funcionalidad principal: Obtiene una lista de todos los usuarios registrados en el sistema.
+   * @description Métodos de realización: Utiliza el método `find` del `usuariosRepository` para obtener todos los registros de la tabla de usuarios.
+   * @returns {Promise<Usuarios[]>} Una promesa que se resuelve con un arreglo de todos los objetos de usuario.
+   */
   async encontrarUsuarios() {
     try {
       const usuarios = this.usuariosRepository.find();
@@ -66,6 +77,12 @@ export class UsuariosService {
     }
   }
 
+  /**
+   * @description Funcionalidad principal: Crea un nuevo usuario y sus datos relacionados en la base de datos.
+   * @description Métodos de realización: Verifica si ya existe un usuario con el mismo código. Crea o asocia las entidades relacionadas (domicilio, email, etc.) usando sus servicios. Cifra la contraseña con `bcrypt`. Crea y guarda la instancia del usuario con todas sus relaciones. Finalmente, asigna los roles proporcionados.
+   * @param {CrearUsuarioDto} usDto - DTO que contiene toda la información para crear el nuevo usuario.
+   * @returns {Promise<Usuarios>} Una promesa que se resuelve con el objeto del nuevo usuario creado.
+   */
   async CrearUsuario(usDto: CrearUsuarioDto) {
     try {
       const usF = await this.encontrarUnUsuario(usDto.codigo);
@@ -124,6 +141,13 @@ export class UsuariosService {
     }
   }
 
+  /**
+   * @description Funcionalidad principal: Actualiza la información de un usuario existente y sus datos relacionados.
+   * @description Métodos de realización: Busca el usuario por su `id`. Si se proporciona una nueva contraseña, la cifra. Actualiza individualmente cada una de las entidades relacionadas (domicilio, email, etc.) si se incluyen en el DTO. Actualiza los campos directos del usuario y guarda la entidad actualizada. También maneja la actualización de roles.
+   * @param {number} id - ID del usuario a actualizar.
+   * @param {UpUsuarioDto} usDto - DTO que contiene los campos a actualizar.
+   * @returns {Promise<Usuarios>} Una promesa que se resuelve con el objeto del usuario actualizado.
+   */
   async actualizarUsuario(id: number, usDto: UpUsuarioDto) {
     try {
       // Buscar el usuario a actualizar
