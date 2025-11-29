@@ -4,14 +4,29 @@ import { Domicilios } from './entities/domicilio.entity';
 import { Repository } from 'typeorm';
 import { CreateDomicilioDto } from './dtos/cr-dom.dto';
 import { UpDomDto } from './dtos/up-dom.dto';
-
+/**
+ * Este servicio maneja las operaciones relacionadas con los domicilios,
+ * incluyendo la creación, actualización y obtención de domicilios.
+ *
+ * Este no cuenta con métodos para eliminar domicilios, ya que generalmente
+ * los domicilios se mantienen en la base de datos por razones históricas y de integridad
+ * referencial con otros registros (en) que puedan estar asociados
+ * a un domicilio específico.
+ *
+ * Además, este servicio no cuenta con un controlador debido a que solo es llamado
+ * por UsuariosService al momento de crear o actualizar un usuario.
+ */
 @Injectable()
 export class DomicilioService {
   constructor(
     @InjectRepository(Domicilios)
     private readonly domRepository: Repository<Domicilios>,
   ) {}
-
+  /**
+   * Retorna un domicilio por su id
+   * @param domicilio id del domicilio registrado
+   * @returns Domicilio
+   */
   async getDom(domicilio: number) {
     const dom = this.domRepository.findOne({ where: { id_dom: domicilio } });
     if (dom) {
@@ -56,7 +71,12 @@ export class DomicilioService {
       throw new HttpException('Domicilio no creado', HttpStatus.BAD_REQUEST);
     }
   }
-
+  /**
+   * Actualiza un domicilio existente en la base de datos.
+   * @param id_dom Id del domicilio registrado en la bd
+   * @param upDomDto Cuerpo de upDomDto en UpDomDto
+   * @returns
+   */
   async upDom(id_dom: number, upDomDto: UpDomDto) {
     try {
       const domF = await this.getDom(id_dom);

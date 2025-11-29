@@ -51,7 +51,13 @@ export class ImgUsService {
       );
     }
   }
-
+  /**
+   * Lo que hace es actualizar la ruta de la imagen del usuario. Además, elimina
+   * el archivo anterior si la ruta fue cambiada.
+   * @param id_img id de la imagen del usuario registrada
+   * @param upImgDto cuerpo de actualizacion de la imagen
+   * @returns ruta de la imagen actualizada
+   */
   async upImg(id_img: number, upImgDto: UpImgUsDTO) {
     try {
       const imgF = await this.imgRepository.findOne({

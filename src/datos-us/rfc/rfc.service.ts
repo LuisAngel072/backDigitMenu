@@ -4,7 +4,15 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateRFCDTO } from './dtos/crRFC.dto';
 import { UpRFCDTO } from './dtos/upRFC.dto';
-
+/**
+ * Servicio para gestionar operaciones relacionadas con el RFC (Registro Federal de Contribuyentes).
+ * Proporciona métodos para crear, obtener y actualizar registros de RFC en la base de datos.
+ * No cuenta con métodos para eliminar registros de RFC, ya que generalmente
+ * estos se mantienen en la base de datos por razones históricas y de integridad
+ * referencial con otros registros que puedan estar asociados a un RFC específico.
+ * No cuenta con un controlador debido a que solo es llamado
+ * por UsuariosService al momento de crear o actualizar un usuario.
+ */
 @Injectable()
 export class RfcService {
   constructor(
@@ -12,6 +20,11 @@ export class RfcService {
     private readonly rfcRepository: Repository<RFC>,
   ) {}
 
+  /**
+   * Retorna un RFC existente en base a su valor unico
+   * @param rfcObj String de rfc (basicamente el propio rfc es una llave unica)
+   * @returns  Retorna RFC en forma de su entidad RFC
+   */
   async getRfc(rfcObj: string) {
     const rfc = this.rfcRepository.findOne({ where: { rfc: rfcObj } });
     if (rfc) {
@@ -19,7 +32,13 @@ export class RfcService {
     }
     return null;
   }
-
+  /**
+   * Retorna un RFC creado o existente. Si el RFC ya fue registrado
+   * retorna el encontrado
+   * De lo contrario, registra un nuevo RFC y lo retorna.
+   * @param rfcDTO DTO para registrar un RFC
+   * @returns RFC existente o creado
+   */
   async crRFC(rfcDTO: CreateRFCDTO) {
     try {
       const rfcF = await this.getRfc(rfcDTO.rfc);
@@ -40,7 +59,12 @@ export class RfcService {
       );
     }
   }
-
+  /**
+   * Actualiza un RFC existente en la base de datos.
+   * @param id_rfc Id del RFC a actualizar
+   * @param rfcDTO Cuerpo en UpRFCDTO, tiene partial type de RFC
+   * @returns RFC actualizado
+   */
   async upRFC(id_rfc: number, rfcDTO: UpRFCDTO) {
     try {
       const rfcF = await this.rfcRepository.findOne({

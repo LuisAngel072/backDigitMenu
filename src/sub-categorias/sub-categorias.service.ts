@@ -17,6 +17,11 @@ export class SubCategoriasService {
     private readonly categorias_repository: Repository<Categorias>,
   ) {}
 
+  /**
+   * @description Funcionalidad principal: Obtiene todas las subcategorías existentes en la base de datos.
+   * @description Métodos de realización: Utiliza el método `find` del repositorio para buscar todas las subcategorías, incluyendo la relación con su categoría principal.
+   * @returns {Promise<Sub_categorias[]>} Una promesa que se resuelve en un arreglo de todas las subcategorías.
+   */
   async getSubCategorias() {
     try {
       const subCats = await this.sub_categorias_repository.find({
@@ -39,6 +44,12 @@ export class SubCategoriasService {
     }
   }
 
+  /**
+   * @description Funcionalidad principal: Obtiene una subcategoría específica por su ID.
+   * @description Métodos de realización: Usa el método `findOne` del repositorio para buscar una subcategoría que coincida con el ID proporcionado.
+   * @param {number} id_subcat - El ID de la subcategoría a buscar.
+   * @returns {Promise<Sub_categorias>} Una promesa que se resuelve en la entidad de la subcategoría encontrada.
+   */
   async getSubCategoria(id_subcat: number) {
     try {
       const subCatF = await this.sub_categorias_repository.findOne({
@@ -62,6 +73,12 @@ export class SubCategoriasService {
     }
   }
 
+  /**
+   * @description Funcionalidad principal: Crea una nueva subcategoría en la base de datos.
+   * @description Métodos de realización: Busca la categoría principal por ID. Si existe, crea una nueva entidad de subcategoría con los datos del DTO y la guarda en el repositorio.
+   * @param {CrSubCategoriasDTO} subCatDto - DTO con los datos para crear la nueva subcategoría.
+   * @returns {Promise<Sub_categorias>} Una promesa que se resuelve en la nueva subcategoría creada.
+   */
   async crSubCat(subCatDto: CrSubCategoriasDTO) {
     try {
       const catF = await this.categorias_repository.findOne({
@@ -95,6 +112,15 @@ export class SubCategoriasService {
     }
   }
 
+  /**
+   * @description Funcionalidad principal: Actualiza una subcategoría existente.
+   * @description Métodos de realización: Busca la subcategoría por ID. Si se proporciona
+   * una nueva imagen, elimina la anterior. Luego, actualiza los datos de la subcategoría
+   * en el repositorio.
+   * @param {number} id_subcat - El ID de la subcategoría a actualizar.
+   * @param {UpSubCatDTO} upSubCatDTO - DTO con los nuevos datos para la subcategoría.
+   * @returns {Promise<UpdateResult>} Una promesa que se resuelve con el resultado de la operación de actualización.
+   */
   async upSubCat(
     id_subcat: number,
     upSubCatDTO: UpSubCatDTO,
@@ -147,6 +173,14 @@ export class SubCategoriasService {
     }
   }
 
+  /**
+   * @description Funcionalidad principal: Elimina una subcategoría de la base de datos.
+   * @description Métodos de realización: Busca la subcategoría por ID,
+   * elimina el archivo de imagen asociado del sistema de archivos y luego
+   * elimina el registro de la base de datos usando el método `delete`.
+   * @param {number} id_subcat - El ID de la subcategoría a eliminar.
+   * @returns {Promise<any>} Una promesa que se resuelve cuando la eliminación es completada.
+   */
   async delSubCat(id_subcat: number) {
     try {
       const subCatF = await this.getSubCategoria(id_subcat);

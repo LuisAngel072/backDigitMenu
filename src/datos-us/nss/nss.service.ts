@@ -4,7 +4,15 @@ import { NSS } from './entities/nss.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateNSSDTO } from './dtos/cr-nss.dto';
 import { UpNssDto } from './dtos/up-nss.dto';
-
+/**
+ * Servicio para gestionar operaciones relacionadas con el NSS (Número de Seguridad Social).
+ * Proporciona métodos para crear, obtener y actualizar registros de NSS en la base de datos.
+ * No cuenta con métodos para eliminar registros de NSS, ya que generalmente
+ * estos se mantienen en la base de datos por razones históricas y de integridad
+ * referencial con otros registros que puedan estar asociados a un NSS específico.
+ * No cuenta con un controlador debido a que solo es llamado
+ * por UsuariosService al momento de crear o actualizar un usuario.
+ */
 @Injectable()
 export class NssService {
   constructor(
@@ -12,6 +20,11 @@ export class NssService {
     private readonly nssRepository: Repository<NSS>,
   ) {}
 
+  /**
+   * Retorna un NSS existente en base a su valor unico
+   * @param nssObj String de nss (basicamente el propio nss es una llave unica)
+   * @returns  Retorna NSS en forma de su entidad NSS
+   */
   async getNss(nssObj: string) {
     const nss = this.nssRepository.findOne({ where: { nss: nssObj } });
     if (nss) {
@@ -19,7 +32,13 @@ export class NssService {
     }
     return null;
   }
-
+  /**
+   * Retorna un NSS creado o existente. Si el NSS ya fue registrado
+   * retorna el encontrado
+   * De lo contrario, registra un nuevo NSS y lo retorna.
+   * @param nssDTO DTO para registrar un NSS
+   * @returns NSS existente o creado
+   */
   async crNss(nssDTO: CreateNSSDTO) {
     try {
       const nssF = await this.getNss(nssDTO.nss);
@@ -41,6 +60,12 @@ export class NssService {
     }
   }
 
+  /**
+   * Actualiza un NSS existente en la base de datos.
+   * @param id_nss Id del NSS a actualizar
+   * @param nssDTO Cuerpo en UpNssDto, tiene partial type de CreateNSSDTO
+   * @returns NSS actualizado
+   */
   async upNss(id_nss: number, nssDTO: UpNssDto) {
     try {
       const nssF = await this.nssRepository.findOne({

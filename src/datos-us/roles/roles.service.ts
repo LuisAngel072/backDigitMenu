@@ -16,6 +16,10 @@ export class RolesService {
     private readonly usuariosRepository: Repository<Usuarios>,
   ) {}
 
+  /**
+   * Está función obtiene todos los roles disponibles en la bd.
+   * @returns Arreglo de Roles[]
+   */
   async getRoles(): Promise<Roles[]> {
     try {
       const roles = await this.rolesRepository.find();
@@ -28,7 +32,13 @@ export class RolesService {
       );
     }
   }
-
+  /**
+   * Asigna un rol a un usuario específico. Esto haciendo un registro dentro de la tabla
+   * UsuariosHasRoles que relaciona Usuarios y Roles en M:M.
+   * @param id_usuario Usuario a relacionar
+   * @param rol rol a relacionar
+   * @returns UsuariosHasRoles creado
+   */
   async asignarRolAUsuario(id_usuario: number, rol: string) {
     try {
       // Buscar usuario y rol en la base de datos
@@ -62,7 +72,12 @@ export class RolesService {
       );
     }
   }
-
+  /**
+   * Obtiene los registros de un usuario específico junto con sus roles asociados. De forma más
+   * técnica, obtiene los registros de la tabla UsuariosHasRoles para un usuario dado.
+   * @param usuario Usuario del cual se desean obtener su información y todos sus roles
+   * @returns Arreglo de Roles asociados al usuario
+   */
   async getRolesByUsuario(usuario: Usuarios) {
     try {
       const roles = await this.usHrolRepository.find({
@@ -80,6 +95,13 @@ export class RolesService {
     }
   }
 
+  /**
+   * Esta función cambia el rol asignado a un usuario específico.
+   * Solo es ejecutada desde usuariosService al momento de actualizar el rol de un usuario
+   * @param codigo Código del usuario al cual se le cambiará el rol
+   * @param rol_id Nuevo rol a asignar al usuario
+   * @returns Rol asignado actualizado
+   */
   async cambiarRol(codigo: string, rol_id: Roles): Promise<UsuariosHasRoles> {
     try {
       // Buscar el usuario por código
@@ -123,6 +145,10 @@ export class RolesService {
     }
   }
 
+  /**
+   * Obtiene todos los usuarios junto con sus roles asignados + información relacionada.
+   * @returns UsuarioHroles[]
+   */
   async obtenerUsuariosYRoles() {
     try {
       const usFHrol = await this.usHrolRepository.find({

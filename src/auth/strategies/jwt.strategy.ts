@@ -7,6 +7,10 @@ import { Usuarios } from 'src/usuarios/entities/usuarios.entity';
 import { Repository } from 'typeorm';
 import { Roles } from 'src/datos-us/roles/entities/roles.entity';
 
+/**
+ * Estrategia JWT para la autenticación de usuarios.
+ * Esta estrategia valida el token JWT presente en las solicitudes entrantes.
+ */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(

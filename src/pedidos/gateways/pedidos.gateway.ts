@@ -37,21 +37,26 @@ export class PedidosGateway
     this.logger.log(
       `🔌 INTENTO de conexión: Cliente ID ${client.id} desde ${client.handshake.address}`,
     );
-    // ... tu lógica actual ...
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`🔌 Cliente DESCONECTADO: ${client.id}`);
   }
 
-  // --- Tus métodos emitirNuevoProducto y emitirEstadoActualizado (sin cambios) ---
+  /**
+   * Emite un evento 'nuevoProducto' a todos los clientes conectados cuando se agrega un nuevo producto a un pedido.
+   * @param productoCompleto Producto con sus extras e ingredientes seleccionados
+   */
   emitirNuevoProducto(productoCompleto: Producto_extras_ingrSel) {
     this.logger.log(
       `Emitiendo 'nuevoProducto' para producto ID: ${productoCompleto.pedido_prod_id}`,
     );
     this.server.emit('nuevoProducto', productoCompleto);
   }
-
+  /**
+   * Emite un evento 'estadoActualizado' a todos los clientes conectados cuando se actualiza el estado de un producto en un pedido.
+   * @param productoActualizado Producto con su estado actualizado
+   */
   emitirEstadoActualizado(productoActualizado: Producto_extras_ingrSel) {
     this.logger.log(
       `Emitiendo 'estadoActualizado' para producto ID: ${productoActualizado.pedido_prod_id} (Nuevo estado: ${productoActualizado.estado})`,

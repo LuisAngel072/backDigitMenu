@@ -16,6 +16,13 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  /**
+   * Valida que el codigo y contrasena ingresados sean correctos y coincidan con un usuario activo
+   * de la base de datos. Si es asi, retorna el usuario sin la contrasena.
+   * @param codigo codigo del usuario ingresado en el login
+   * @param contrasena contrasena ingresada en el login
+   * @returns 201 or 401/403
+   */
   async validarUsuario(codigo: string, contrasena: string) {
     const usuario = await this.usuariosService.encontrarUnUsuario(codigo);
     if (!usuario) {
@@ -49,7 +56,11 @@ export class AuthService {
     // Si no se cumple ninguna de las condiciones, lanza la excepción
     throw new UnauthorizedException('Credenciales inválidas');
   }
-
+  /**
+   * Inicia sesion un usuario y genera un token JWT con su informacion
+   * @param usuario usuario que va a ingresar sesion
+   * @returns Token de acceso a las apis
+   */
   async iniciarSesion(usuario: any) {
     const roles = await this.rolesService.getRolesByUsuario(usuario);
     const rol = roles[0].rol;

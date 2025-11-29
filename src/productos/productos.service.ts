@@ -26,6 +26,10 @@ export class ProductosService {
     private readonly subCategoriasRepository: Repository<Sub_categorias>,
   ) {}
 
+  /**
+   * Obtiene todos los productos con sus relaciones de categorias
+   * @returns Productos[] + Categoria y Subcategoria
+   */
   async obtenerProductos() {
     try {
       const productos = this.productosRepository.find({
@@ -48,6 +52,11 @@ export class ProductosService {
       );
     }
   }
+  /**
+   * Obtiene el registro de un producto en específico
+   * @param id_prod id del producto a consultar
+   * @returns objeto Productos
+   */
   async obtenerProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
@@ -70,6 +79,11 @@ export class ProductosService {
     }
   }
 
+  /**
+   * Obtiene los extras asociados a un producto específico.
+   * @param id_prod - El ID del producto del que se quieren obtener los extras.
+   * @returns Una promesa que se resuelve en un arreglo de relaciones 'Productos_has_extras'.
+   */
   async obtenerExtrasDeProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
@@ -96,6 +110,11 @@ export class ProductosService {
     }
   }
 
+  /**
+   * Obtiene los ingredientes asociados a un producto específico.
+   * @param id_prod - El ID del producto para consultar sus ingredientes.
+   * @returns Un arreglo de relaciones 'Productos_has_ingredientes'.
+   */
   async obtenerIngredientesDeProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
@@ -122,6 +141,11 @@ export class ProductosService {
     }
   }
 
+  /**
+   * Obtiene las opciones asociadas a un producto específico.
+   * @param id_prod - El ID del producto para consultar sus opciones.
+   * @returns Un arreglo de relaciones 'Productos_has_opciones'.
+   */
   async obtenerOpcionesDeProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
@@ -148,6 +172,10 @@ export class ProductosService {
     }
   }
 
+  /**
+   * Crea un nuevo producto y establece sus relaciones con extras, ingredientes y opciones.
+   * @param prodDTO - DTO con los datos para crear el producto y sus relaciones.
+   */
   async crearProducto(prodDTO: CrProductosDto) {
     try {
       const sub_cat_id = await this.subCategoriasRepository.findOne({
@@ -311,6 +339,11 @@ export class ProductosService {
     }
   }
 
+  /**
+   * Elimina un producto, sus relaciones y el archivo de imagen asociado.
+   * @param id_prod - El ID del producto a eliminar.
+   * @returns El resultado de la operación de eliminación de la base de datos.
+   */
   async delProducto(id_prod: number) {
     try {
       const producto = await this.productosRepository.findOne({
@@ -353,6 +386,12 @@ export class ProductosService {
     }
   }
 
+  /**
+   * Actualiza la imagen de un producto. Elimina la imagen anterior si existe una nueva.
+   * @param id_prod - El ID del producto a actualizar.
+   * @param img_prod - La nueva ruta de la imagen del producto.
+   * @returns El resultado de la operación de actualización.
+   */
   async upImgProducto(id_prod: number, img_prod: string) {
     try {
       const producto = await this.productosRepository.findOne({
