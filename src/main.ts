@@ -5,12 +5,26 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { IoAdapter } from '@nestjs/platform-socket.io';
+
+export class SocketAdapter extends IoAdapter {
+  createIOServer(port: number, options?: any): any {
+    options = options || {};
+    options.cors = {
+      origin: true,
+      methods: ['GET', 'POST'],
+      credentials: true,
+    };
+    const server = super.createIOServer(port, options);
+    return server;
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors({
-    origin: '*', // Origen Angular
+    origin: true, // Origen Angular
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
