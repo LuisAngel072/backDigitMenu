@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Domicilios } from 'src/datos-us/domicilio/entities/domicilio.entity';
 import { Email } from 'src/datos-us/email/entities/email.entity';
 import { Img_us } from 'src/datos-us/img-us/entities/img_us.entity';
@@ -42,6 +43,7 @@ export class Usuarios {
   sexo: string;
 
   @Column({ name: 'contrasena', type: 'varchar', length: 255 })
+  @Exclude()
   contrasena: string;
 
   @Column({ name: 'activo', type: 'boolean', default: 1 })

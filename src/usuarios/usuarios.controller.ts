@@ -1,11 +1,13 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   ParseIntPipe,
   Patch,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CrearUsuarioDto } from './dtos/crear-usuario.dto';
 import { UsuariosService } from './usuarios.service';
@@ -14,6 +16,7 @@ import { Roles_validos } from 'src/usuarios/interfaces/roles_validos.enum';
 import { UpUsuarioDto } from './dtos/up-usuario.dto';
 
 @Controller('usuarios')
+@UseInterceptors(ClassSerializerInterceptor)
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 

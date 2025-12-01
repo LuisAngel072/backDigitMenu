@@ -2,10 +2,11 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, BadRequestException } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import helmet from 'helmet';
 
 export class SocketAdapter extends IoAdapter {
   createIOServer(port: number, options?: any): any {
@@ -23,6 +24,17 @@ export class SocketAdapter extends IoAdapter {
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.use(
+    helmet({
+      // Desactivamos CSP en el backend porque Nginx ya la envía para el HTML.
+      // Si la API enviara otra CSP, el navegador se confundiría.
+      contentSecurityPolicy: false,
+
+      // Permitimos que recursos de otros dominios (el frontend) carguen cosas de la API
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
+
   app.enableCors({
     origin: true, // Origen Angular
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -37,6 +49,14 @@ async function bootstrap() {
       transform: true,
       transformOptions: {
         enableImplicitConversion: false,
+      },
+      exceptionFactory: (errors) => {
+        return new BadRequestException(
+          errors.map((err) => ({
+            property: err.property,
+            constraints: err.constraints,
+          })),
+        );
       },
     }),
   );

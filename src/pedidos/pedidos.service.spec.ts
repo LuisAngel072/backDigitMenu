@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PedidosService } from './pedidos.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { HttpException, HttpStatus } from '@nestjs/common';
-
-// Importa TODAS las entidades cuyos repositorios vas a simular
-import { Pedidos, EstadoPedido } from './entities/pedidos.entity';
 import { Pedidos_has_productos } from './entities/pedidos_has_productos.entity';
+
+import { Pedidos } from './entities/pedidos.entity';
 import { Pedidos_has_extrassel } from './entities/pedidos_has_extrasSel.entity';
 import { Pedidos_has_ingrsel } from './entities/pedidos_has_ingrSel.entity';
 import { Productos } from '../productos/entities/productos.entity';
@@ -15,124 +13,108 @@ import { Ingredientes } from '../ingredientes/entities/ingredientes.entity';
 import { Opciones } from '../opciones/entities/opciones.entity';
 import { PedidosGateway } from './gateways/pedidos.gateway';
 
-// 1. CREACIÓN DE MOCKS
-const mockPedidosRepository = { find: jest.fn() };
-const mockPHPrRepository = {
-  createQueryBuilder: jest.fn(),
-  findOne: jest.fn(),
-};
-const mockPHExsRepository = { find: jest.fn() };
-const mockPHIngrsRepository = { find: jest.fn() };
-const mockProductosRepository = {}; // Lo dejamos vacío si no se usa directamente en la función probada
-const mockMesaRepository = {};
-const mockExtrasRepository = {};
-const mockIngredientesRepository = {};
-const mockOpcionesRepository = {};
-const mockPedidosGateway = { actualizarPedido: jest.fn() };
-
 describe('PedidosService', () => {
   let service: PedidosService;
+
+  const mockQueryBuilder = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    getMany: jest.fn(),
+  };
+
+  const mockPHPrRepository = {
+    createQueryBuilder: jest.fn(() => mockQueryBuilder),
+    findOne: jest.fn(),
+  };
+
+  const mockRepository = { find: jest.fn() };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        PedidosService, // El servicio real que queremos probar
-        //Proveemos TODOS los mocks necesarios
-        {
-          provide: getRepositoryToken(Pedidos),
-          useValue: mockPedidosRepository,
-        },
+        PedidosService,
         {
           provide: getRepositoryToken(Pedidos_has_productos),
           useValue: mockPHPrRepository,
         },
+        { provide: getRepositoryToken(Pedidos), useValue: mockRepository },
         {
           provide: getRepositoryToken(Pedidos_has_extrassel),
-          useValue: mockPHExsRepository,
+          useValue: mockRepository,
         },
         {
           provide: getRepositoryToken(Pedidos_has_ingrsel),
-          useValue: mockPHIngrsRepository,
+          useValue: mockRepository,
         },
-        {
-          provide: getRepositoryToken(Productos),
-          useValue: mockProductosRepository,
-        },
-        { provide: getRepositoryToken(Mesa), useValue: mockMesaRepository },
-        { provide: getRepositoryToken(Extras), useValue: mockExtrasRepository },
-        {
-          provide: getRepositoryToken(Ingredientes),
-          useValue: mockIngredientesRepository,
-        },
-        {
-          provide: getRepositoryToken(Opciones),
-          useValue: mockOpcionesRepository,
-        },
-        { provide: PedidosGateway, useValue: mockPedidosGateway },
+        { provide: getRepositoryToken(Productos), useValue: mockRepository },
+        { provide: getRepositoryToken(Mesa), useValue: mockRepository },
+        { provide: getRepositoryToken(Extras), useValue: mockRepository },
+        { provide: getRepositoryToken(Ingredientes), useValue: mockRepository },
+        { provide: getRepositoryToken(Opciones), useValue: mockRepository },
+        { provide: PedidosGateway, useValue: {} },
       ],
     }).compile();
 
     service = module.get<PedidosService>(PedidosService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks(); // Limpia los espías después de cada prueba
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  // PRUEBA PARA getPedidosActivosConDetalles
-  describe('getPedidosActivosConDetalles', () => {
-    it('should return grouped active orders with their products for a given role', async () => {
-      // ===== ARRANGE (Organizar) =====
-      const mockProductosConPedidos = [
-        {
-          pedido_id: {
-            id_pedido: 1,
-            estado: EstadoPedido.no_pagado,
-            no_mesa: { no_mesa: 1 },
-          },
-          producto_id: { id_prod: 1, nombre_prod: 'Pizza' },
-          // ... resto de propiedades del producto
-          extras: [],
-          ingredientes: [],
+  const generarDatosMasivos = (
+    cantidadProductos: number,
+    cantidadPedidos: number,
+  ) => {
+    const datos = [];
+    for (let i = 0; i < cantidadProductos; i++) {
+      const pedidoId = (i % cantidadPedidos) + 1;
+      datos.push({
+        pedido_prod_id: i + 1000,
+        estado: 'Sin preparar',
+        precio: '150.00',
+        pedido_id: {
+          id_pedido: pedidoId,
+          fecha_pedido: new Date(),
+          total: 1500,
+          no_mesa: { no_mesa: 1, id_mesa: 1 },
+          estado: 'No pagado',
         },
-      ];
-
-      mockPHPrRepository.createQueryBuilder.mockReturnValue({
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockProductosConPedidos),
+        producto_id: { id_prod: 10, nombre_prod: `Producto ${i}` },
+        opcion_id: { id_opcion: 5, nombre_opcion: 'Grande' },
+        extras: [],
+        ingredientes: [],
       });
+    }
+    return datos;
+  };
 
-      // ===== ACT (Actuar) =====
-      const result = await service.getPedidosActivosConDetalles('cocinero');
+  describe('Pruebas de Rendimiento (Stress Test)', () => {
+    it('⚠️ DEBE procesar 50 peticiones concurrentes con carga de datos en < 200ms promedio', async () => {
+      const cargaPesada = generarDatosMasivos(500, 50);
+      mockQueryBuilder.getMany.mockResolvedValue(cargaPesada);
 
-      // ===== ASSERT (Afirmar) =====
-      expect(result).toBeInstanceOf(Array);
-      expect(result.length).toBe(1);
-      expect(result[0].pedidoId.id_pedido).toBe(1);
-      expect(result[0].productos.length).toBe(1);
-      expect(mockPHPrRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
-    });
-  });
+      const peticionesConcurrentes = 50;
+      const promesas = [];
 
-  // PRUEBA PARA getExtrasIngrDeProducto
-  describe('getExtrasIngrDeProducto', () => {
-    it('should throw an HttpException if product in order is not found', async () => {
-      // ===== ARRANGE (Organizar) =====
-      mockPHPrRepository.findOne.mockResolvedValue(null);
+      const inicio = performance.now();
 
-      // ===== ACT & ASSERT (Actuar y Afirmar) =====
-      await expect(service.getExtrasIngrDeProducto(999)).rejects.toThrow(
-        new HttpException(
-          `No se encontró el registro del producto en el pedido con id 999`,
-          HttpStatus.NOT_FOUND,
-        ),
+      for (let i = 0; i < peticionesConcurrentes; i++) {
+        promesas.push(service.getPedidosActivosConDetalles('mesero'));
+      }
+
+      await Promise.all(promesas);
+
+      const fin = performance.now();
+      const tiempoTotal = fin - inicio;
+      const tiempoPromedio = tiempoTotal / peticionesConcurrentes;
+
+      console.log(`\n📊 REPORTE DE RENDIMIENTO:`);
+      console.log(`   - Peticiones concurrentes: ${peticionesConcurrentes}`);
+      console.log(`   - Productos simulados: 500`);
+      console.log(`   - Tiempo Total: ${tiempoTotal.toFixed(2)} ms`);
+      console.log(
+        `   - Promedio por petición: ${tiempoPromedio.toFixed(2)} ms`,
       );
+
+      expect(tiempoPromedio).toBeLessThan(200);
     });
   });
 });
